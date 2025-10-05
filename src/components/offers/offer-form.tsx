@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { supabase } from "@/integrations/supabase/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -50,7 +50,6 @@ interface OfferFormProps {
 
 export function OfferForm({ initialData }: OfferFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const supabase = createClientComponentClient();
   const router = useRouter();
   const isEditMode = !!initialData;
 

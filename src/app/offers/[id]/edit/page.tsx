@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { supabase } from "@/integrations/supabase/client";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { OfferForm } from "@/components/offers/offer-form";
@@ -15,7 +15,6 @@ export default function EditOfferPage() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const params = useParams();
-  const supabase = createClientComponentClient();
   const offerId = params.id as string;
 
   useEffect(() => {
@@ -40,7 +39,7 @@ export default function EditOfferPage() {
     if (offerId) {
       getOffer();
     }
-  }, [supabase, router, offerId]);
+  }, [router, offerId]);
 
   if (loading) {
     return (

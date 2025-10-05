@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Link as LinkIcon, Edit, Trash2 } from "lucide-react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { DeleteOfferDialog } from "./delete-offer-dialog";
 import type { Offer } from "./offer-card";
@@ -25,7 +25,6 @@ export function OfferActions({ offer }: OfferActionsProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
-  const supabase = createClientComponentClient();
 
   const links = [
     { label: "Página de Vendas", href: offer.sales_page_link },
