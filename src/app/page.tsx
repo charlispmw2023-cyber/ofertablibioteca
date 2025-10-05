@@ -42,17 +42,15 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         setUser(session.user);
       } else {
         router.push("/login");
       }
-    });
-
-    return () => subscription.unsubscribe();
+    };
+    checkUser();
   }, [supabase, router]);
 
   useEffect(() => {
