@@ -8,18 +8,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Link as LinkIcon, Edit, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { OfferActions } from "./offer-actions";
 
 export type Offer = {
   id: string;
@@ -41,16 +33,6 @@ interface OfferCardProps {
 }
 
 export function OfferCard({ offer }: OfferCardProps) {
-  const links = [
-    { label: "Página de Vendas", href: offer.sales_page_link },
-    { label: "Checkout", href: offer.checkout_link },
-    { label: "Upsell 1", href: offer.upsell_1_link },
-    { label: "Upsell 2", href: offer.upsell_2_link },
-    { label: "Upsell 3", href: offer.upsell_3_link },
-    { label: "Página de Obrigado", href: offer.thank_you_page_link },
-    { label: "Drive", href: offer.drive_link },
-  ].filter((link) => link.href);
-
   return (
     <Card className="flex flex-col overflow-hidden">
       <CardHeader className="p-0">
@@ -77,41 +59,7 @@ export function OfferCard({ offer }: OfferCardProps) {
             locale: ptBR,
           })}
         </p>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {links.length > 0 && (
-              <>
-                {links.map((link) => (
-                  <DropdownMenuItem key={link.label} asChild>
-                    <a
-                      href={link.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex cursor-pointer items-center gap-2"
-                    >
-                      <LinkIcon size={14} />
-                      <span>{link.label}</span>
-                    </a>
-                  </DropdownMenuItem>
-                ))}
-                <DropdownMenuSeparator />
-              </>
-            )}
-            <DropdownMenuItem disabled>
-              <Edit size={14} className="mr-2" />
-              Editar (em breve)
-            </DropdownMenuItem>
-            <DropdownMenuItem className="text-red-500" disabled>
-              <Trash2 size={14} className="mr-2" />
-              Excluir (em breve)
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <OfferActions offer={offer} />
       </CardFooter>
     </Card>
   );

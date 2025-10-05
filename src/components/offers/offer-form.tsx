@@ -25,12 +25,13 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
+import type { Offer } from "./offer-card";
 
 const offerFormSchema = z.object({
   name: z.string().min(2, {
     message: "O nome deve ter pelo menos 2 caracteres.",
   }),
-  image: z.any().refine((file) => file?.length == 1, "A imagem é obrigatória."),
+  image: z.any().optional(),
   sales_page_link: z.string().url().optional().or(z.literal("")),
   checkout_link: z.string().url().optional().or(z.literal("")),
   upsell_1_link: z.string().url().optional().or(z.literal("")),
@@ -41,29 +42,38 @@ const offerFormSchema = z.object({
   drive_link: z.string().url().optional().or(z.literal("")),
 });
 
-export function OfferForm() {
+type OfferFormValues = z.infer<typeof offerFormSchema>;
+
+interface OfferFormProps {
+  initialData?: Offer | null;
+}
+
+export function OfferForm({ initialData }: OfferFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const supabase = createClientComponentClient();
   const router = useRouter();
+  const isEditMode = !!initialData;
 
-  const form = useForm<z.infer<typeof offerFormSchema>>({
+  const form = useForm<OfferFormValues>({
     resolver: zodResolver(offerFormSchema),
     defaultValues: {
-      name: "",
-      sales_page_link: "",
-      checkout_link: "",
-      upsell_1_link: "",
-      upsell_2_link: "",
-      upsell_3_link: "",
-      thank_you_page_link: "",
-      platform: "",
-      drive_link: "",
+      name: initialData?.name ?? "",
+      sales_page_link: initialData?.sales_page_link ?? "",
+      checkout_link: initialData?.checkout_link ?? "",
+      upsell_1_link: initialData?.upsell_1_link ?? "",
+      upsell_2_link: initialData?.upsell_2_link ?? "",
+      upsell_3_link: initialData?.upsell_3_link ?? "",
+      thank_you_page_link: initialData?.thank_you_page_link ?? "",
+      platform: initialData?.platform ?? "",
+      drive_link: initialData?.drive_link ?? "",
     },
   });
 
-  async function onSubmit(values: z.infer<typeof offerFormSchema>) {
+  async function onSubmit(values: OfferFormValues) {
     setIsSubmitting(true);
-    const toastId = toast.loading("Salvando oferta...");
+    const toastId = toast.loading(
+      isEditMode ? "Atualizando oferta..." : "Salvando oferta..."
+    );
 
     try {
       const {
@@ -71,38 +81,51 @@ export function OfferForm() {
       } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado.");
 
-      const imageFile = values.image[0];
-      const fileExt = imageFile.name.split(".").pop();
-      const fileName = `${uuidv4()}.${fileExt}`;
-      const filePath = `${user.id}/${fileName}`;
+      let imageUrl = initialData?.image_url;
+      const imageFile = values.image?.[0];
 
-      const { error: uploadError } = await supabase.storage
-        .from("offer_images")
-        .upload(filePath, imageFile);
+      if (imageFile) {
+        const fileExt = imageFile.name.split(".").pop();
+        const fileName = `${uuidv4()}.${fileExt}`;
+        const filePath = `${user.id}/${fileName}`;
 
-      if (uploadError) {
-        throw new Error(`Erro no upload da imagem: ${uploadError.message}`);
+        const { error: uploadError } = await supabase.storage
+          .from("offer_images")
+          .upload(filePath, imageFile);
+
+        if (uploadError) {
+          throw new Error(`Erro no upload da imagem: ${uploadError.message}`);
+        }
+
+        const { data: publicUrlData } = supabase.storage
+          .from("offer_images")
+          .getPublicUrl(filePath);
+        imageUrl = publicUrlData.publicUrl;
       }
-
-      const { data: publicUrlData } = supabase.storage
-        .from("offer_images")
-        .getPublicUrl(filePath);
 
       const { image, ...offerData } = values;
+      const dataToUpsert = {
+        ...offerData,
+        user_id: user.id,
+        image_url: imageUrl,
+      };
 
-      const { error: insertError } = await supabase.from("offers").insert([
-        {
-          ...offerData,
-          user_id: user.id,
-          image_url: publicUrlData.publicUrl,
-        },
-      ]);
-
-      if (insertError) {
-        throw new Error(`Erro ao salvar a oferta: ${insertError.message}`);
+      if (isEditMode) {
+        const { error } = await supabase
+          .from("offers")
+          .update(dataToUpsert)
+          .eq("id", initialData.id);
+        if (error) throw new Error(`Erro ao atualizar a oferta: ${error.message}`);
+        toast.success("Oferta atualizada com sucesso!", { id: toastId });
+      } else {
+        if (!imageUrl) {
+          throw new Error("A imagem é obrigatória para criar uma nova oferta.");
+        }
+        const { error } = await supabase.from("offers").insert(dataToUpsert);
+        if (error) throw new Error(`Erro ao salvar a oferta: ${error.message}`);
+        toast.success("Oferta salva com sucesso!", { id: toastId });
       }
 
-      toast.success("Oferta salva com sucesso!", { id: toastId });
       router.push("/");
       router.refresh();
     } catch (error) {
@@ -279,7 +302,13 @@ export function OfferForm() {
         </div>
 
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Salvando..." : "Salvar Oferta"}
+          {isSubmitting
+            ? isEditMode
+              ? "Atualizando..."
+              : "Salvando..."
+            : isEditMode
+            ? "Salvar Alterações"
+            : "Salvar Oferta"}
         </Button>
       </form>
     </Form>
