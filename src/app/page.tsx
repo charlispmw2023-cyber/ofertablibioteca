@@ -76,8 +76,8 @@ export default function Home() {
 
     if (filteredOffers.length === 0) {
       return (
-        <div className="rounded-lg border bg-white p-8 text-center">
-          <p className="text-gray-500">
+        <div className="rounded-lg border bg-card p-8 text-center text-card-foreground">
+          <p className="text-muted-foreground">
             Nenhuma oferta encontrada com os filtros atuais.
           </p>
         </div>
@@ -94,7 +94,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-sm">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <h1 className="text-xl font-semibold">Biblioteca de Ofertas</h1>
