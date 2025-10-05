@@ -20,6 +20,8 @@ import { exportToCsv } from "@/lib/csv-export";
 import { toast } from "sonner";
 import { ImportOffersDialog } from "@/components/offers/import-offers-dialog";
 
+type SortOption = "created_at" | "profit" | "roi" | "name";
+
 export default function Home() {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,6 +29,7 @@ export default function Home() {
   const [platformFilter, setPlatformFilter] = useState("all");
   const [nicheFilter, setNicheFilter] = useState("all");
   const [scaleFilter, setScaleFilter] = useState("all");
+  const [sortOption, setSortOption] = useState<SortOption>("created_at");
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -51,7 +54,7 @@ export default function Home() {
     ...new Set(offers.map((offer) => offer.niche).filter(Boolean)),
   ] as string[];
 
-  const filteredOffers = offers
+  const sortedAndFilteredOffers = offers
     .filter((offer) =>
       offer.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
@@ -62,16 +65,33 @@ export default function Home() {
     .filter((offer) => nicheFilter === "all" || offer.niche === nicheFilter)
     .filter(
       (offer) => scaleFilter === "all" || offer.scale_status === scaleFilter
-    );
+    )
+    .sort((a, b) => {
+      switch (sortOption) {
+        case "profit":
+          const profitA = (a.revenue ?? 0) - (a.cost ?? 0);
+          const profitB = (b.revenue ?? 0) - (b.cost ?? 0);
+          return profitB - profitA;
+        case "roi":
+          const roiA = (a.cost ?? 0) > 0 ? ((a.revenue ?? 0) - (a.cost ?? 0)) / (a.cost ?? 1) : -Infinity;
+          const roiB = (b.cost ?? 0) > 0 ? ((b.revenue ?? 0) - (b.cost ?? 0)) / (b.cost ?? 1) : -Infinity;
+          return roiB - roiA;
+        case "name":
+          return a.name.localeCompare(b.name);
+        case "created_at":
+        default:
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+    });
 
   const handleExport = () => {
-    if (filteredOffers.length === 0) {
+    if (sortedAndFilteredOffers.length === 0) {
       toast.error("Nenhuma oferta para exportar com os filtros atuais.");
       return;
     }
     const fileName = `ofertas_${new Date().toISOString().split("T")[0]}.csv`;
-    exportToCsv(filteredOffers, fileName);
-    toast.success(`${filteredOffers.length} ofertas exportadas com sucesso!`);
+    exportToCsv(sortedAndFilteredOffers, fileName);
+    toast.success(`${sortedAndFilteredOffers.length} ofertas exportadas com sucesso!`);
   };
 
   const renderContent = () => {
@@ -91,7 +111,7 @@ export default function Home() {
       );
     }
 
-    if (filteredOffers.length === 0) {
+    if (sortedAndFilteredOffers.length === 0) {
       return (
         <div className="rounded-lg border bg-card p-8 text-center text-card-foreground">
           <p className="text-muted-foreground">
@@ -103,7 +123,7 @@ export default function Home() {
 
     return (
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {filteredOffers.map((offer) => (
+        {sortedAndFilteredOffers.map((offer) => (
           <OfferCard key={offer.id} offer={offer} />
         ))}
       </div>
@@ -156,7 +176,7 @@ export default function Home() {
               </Link>
             </div>
           </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
             <Select value={platformFilter} onValueChange={setPlatformFilter}>
               <SelectTrigger>
                 <SelectValue placeholder="Filtrar por plataforma" />
@@ -196,6 +216,17 @@ export default function Home() {
                 <SelectItem value="Pré escala">Pré escala</SelectItem>
                 <SelectItem value="Escalando">Escalando</SelectItem>
                 <SelectItem value="ESCALADISSIMA">ESCALADISSIMA</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={sortOption} onValueChange={(value) => setSortOption(value as SortOption)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Ordenar por" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="created_at">Mais Recentes</SelectItem>
+                <SelectItem value="profit">Maior Lucro</SelectItem>
+                <SelectItem value="roi">Maior ROI</SelectItem>
+                <SelectItem value="name">Nome (A-Z)</SelectItem>
               </SelectContent>
             </Select>
           </div>
