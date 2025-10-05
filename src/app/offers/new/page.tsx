@@ -6,6 +6,8 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { OfferForm } from "@/components/offers/offer-form";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function NewOfferPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -54,14 +56,15 @@ export default function NewOfferPage() {
         </div>
       </header>
       <main className="container mx-auto p-4 sm:p-6">
-        <div className="mx-auto max-w-2xl">
-          <h1 className="mb-6 text-3xl font-bold">Adicionar Nova Oferta</h1>
-          {/* O formulário será adicionado aqui */}
-          <div className="rounded-lg border bg-white p-8 text-center">
-            <p className="text-gray-500">
-              O formulário para adicionar a oferta será implementado aqui.
-            </p>
-          </div>
+        <div className="mx-auto max-w-4xl">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl">Adicionar Nova Oferta</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <OfferForm />
+            </CardContent>
+          </Card>
         </div>
       </main>
     </div>
