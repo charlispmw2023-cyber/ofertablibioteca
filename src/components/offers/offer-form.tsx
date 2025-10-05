@@ -39,6 +39,7 @@ const offerFormSchema = z.object({
   upsell_3_link: z.string().url().optional().or(z.literal("")),
   thank_you_page_link: z.string().url().optional().or(z.literal("")),
   platform: z.string().min(1, { message: "Selecione uma plataforma." }),
+  niche: z.string().optional(),
   drive_link: z.string().url().optional().or(z.literal("")),
 });
 
@@ -64,6 +65,7 @@ export function OfferForm({ initialData }: OfferFormProps) {
       upsell_3_link: initialData?.upsell_3_link ?? "",
       thank_you_page_link: initialData?.thank_you_page_link ?? "",
       platform: initialData?.platform ?? "",
+      niche: initialData?.niche ?? "",
       drive_link: initialData?.drive_link ?? "",
     },
   });
@@ -81,7 +83,7 @@ export function OfferForm({ initialData }: OfferFormProps) {
       if (imageFile) {
         const fileExt = imageFile.name.split(".").pop();
         const fileName = `${uuidv4()}.${fileExt}`;
-        const filePath = fileName; // No user folder needed
+        const filePath = fileName;
 
         const { error: uploadError } = await supabase.storage
           .from("offer_images")
@@ -281,18 +283,32 @@ export function OfferForm({ initialData }: OfferFormProps) {
           />
           <FormField
             control={form.control}
-            name="drive_link"
+            name="niche"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Link do Drive</FormLabel>
+                <FormLabel>Nicho</FormLabel>
                 <FormControl>
-                  <Input placeholder="https://drive.google.com/..." {...field} />
+                  <Input placeholder="Ex: Saúde e Bem-estar" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
+        
+        <FormField
+          control={form.control}
+          name="drive_link"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Link do Drive</FormLabel>
+              <FormControl>
+                <Input placeholder="https://drive.google.com/..." {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting

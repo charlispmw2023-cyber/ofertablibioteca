@@ -18,6 +18,7 @@ export type Offer = {
   name: string;
   image_url: string;
   platform: string;
+  niche?: string | null; // Added niche
   created_at: string;
   sales_page_link?: string;
   checkout_link?: string;
@@ -48,9 +49,16 @@ export function OfferCard({ offer }: OfferCardProps) {
       </CardHeader>
       <CardContent className="flex-grow p-4">
         <CardTitle className="mb-1 text-lg">{offer.name}</CardTitle>
-        <CardDescription>
-          Plataforma: <span className="font-semibold">{offer.platform}</span>
-        </CardDescription>
+        <div className="space-y-1">
+          <CardDescription>
+            Plataforma: <span className="font-semibold">{offer.platform}</span>
+          </CardDescription>
+          {offer.niche && (
+            <CardDescription>
+              Nicho: <span className="font-semibold">{offer.niche}</span>
+            </CardDescription>
+          )}
+        </div>
       </CardContent>
       <CardFooter className="flex items-center justify-between p-4 pt-0">
         <p className="text-sm text-gray-500">
