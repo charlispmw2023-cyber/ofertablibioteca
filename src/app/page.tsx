@@ -16,7 +16,6 @@ import { OfferCard, type Offer } from "@/components/offers/offer-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BarChart, Download } from "lucide-react";
-import { FeatureBar } from "@/components/feature-bar";
 import { exportToCsv } from "@/lib/csv-export";
 import { toast } from "sonner";
 
@@ -124,7 +123,6 @@ export default function Home() {
           </div>
         </div>
       </header>
-      <FeatureBar />
       <main className="container mx-auto p-4 sm:p-6">
         <div className="mb-6 flex flex-col gap-4">
           <div className="flex flex-col gap-4 sm:flex-row">
