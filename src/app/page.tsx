@@ -15,7 +15,10 @@ import Link from "next/link";
 import { OfferCard, type Offer } from "@/components/offers/offer-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { BarChart } from "lucide-react";
+import { BarChart, Download } from "lucide-react";
+import { FeatureBar } from "@/components/feature-bar";
+import { exportToCsv } from "@/lib/csv-export";
+import { toast } from "sonner";
 
 export default function Home() {
   const [offers, setOffers] = useState<Offer[]>([]);
@@ -59,6 +62,16 @@ export default function Home() {
     .filter(
       (offer) => scaleFilter === "all" || offer.scale_status === scaleFilter
     );
+
+  const handleExport = () => {
+    if (filteredOffers.length === 0) {
+      toast.error("Nenhuma oferta para exportar com os filtros atuais.");
+      return;
+    }
+    const fileName = `ofertas_${new Date().toISOString().split("T")[0]}.csv`;
+    exportToCsv(filteredOffers, fileName);
+    toast.success(`${filteredOffers.length} ofertas exportadas com sucesso!`);
+  };
 
   const renderContent = () => {
     if (loading) {
@@ -111,6 +124,7 @@ export default function Home() {
           </div>
         </div>
       </header>
+      <FeatureBar />
       <main className="container mx-auto p-4 sm:p-6">
         <div className="mb-6 flex flex-col gap-4">
           <div className="flex flex-col gap-4 sm:flex-row">
@@ -121,11 +135,25 @@ export default function Home() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <Link href="/offers/new" passHref className="w-full sm:w-auto">
-              <Button className="w-full shrink-0 sm:w-auto">
-                Adicionar Nova Oferta
+            <div className="flex w-full items-center gap-2 sm:w-auto">
+              <Button
+                variant="outline"
+                onClick={handleExport}
+                className="w-1/2 sm:w-auto"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Exportar
               </Button>
-            </Link>
+              <Link
+                href="/offers/new"
+                passHref
+                className="w-1/2 sm:w-auto"
+              >
+                <Button className="w-full shrink-0">
+                  Adicionar Nova Oferta
+                </Button>
+              </Link>
+            </div>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Select value={platformFilter} onValueChange={setPlatformFilter}>
