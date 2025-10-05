@@ -17,7 +17,7 @@ import Link from "next/link";
 import { OfferCard, type Offer } from "@/components/offers/offer-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Download, Upload } from "lucide-react";
+import { Download, Upload, Kanban } from "lucide-react";
 import { exportToCsv } from "@/lib/csv-export";
 import { toast } from "sonner";
 import { ImportOffersDialog } from "@/components/offers/import-offers-dialog";
@@ -142,6 +142,11 @@ export default function Home() {
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <h1 className="text-xl font-semibold">Biblioteca de Ofertas</h1>
           <div className="flex items-center gap-2">
+            <Link href="/board" passHref>
+              <Button variant="outline" size="icon" aria-label="Quadro Kanban">
+                <Kanban className="h-4 w-4" />
+              </Button>
+            </Link>
             <Button variant="outline" onClick={handleSignOut}>Sair</Button>
             <ThemeToggle />
           </div>
