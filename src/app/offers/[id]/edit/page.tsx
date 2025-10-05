@@ -51,7 +51,7 @@ export default function EditOfferPage() {
 
   return (
     <div className="min-h-screen">
-      <header className="border-b bg-background/80 backdrop-blur-sm">
+      <header className="border-b bg-card/95 backdrop-blur-sm">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <Link
             href="/"
