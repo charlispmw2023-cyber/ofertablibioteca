@@ -4,6 +4,13 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import Link from "next/link";
 import { OfferCard, type Offer } from "@/components/offers/offer-card";
@@ -13,6 +20,8 @@ export default function Home() {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [platformFilter, setPlatformFilter] = useState("all");
+  const [nicheFilter, setNicheFilter] = useState("all");
 
   useEffect(() => {
     const getOffers = async () => {
@@ -32,9 +41,19 @@ export default function Home() {
     getOffers();
   }, []);
 
-  const filteredOffers = offers.filter((offer) =>
-    offer.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const uniqueNiches = [
+    ...new Set(offers.map((offer) => offer.niche).filter(Boolean)),
+  ] as string[];
+
+  const filteredOffers = offers
+    .filter((offer) =>
+      offer.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .filter(
+      (offer) =>
+        platformFilter === "all" || offer.platform === platformFilter
+    )
+    .filter((offer) => nicheFilter === "all" || offer.niche === nicheFilter);
 
   const renderContent = () => {
     if (loading) {
@@ -57,9 +76,7 @@ export default function Home() {
       return (
         <div className="rounded-lg border bg-white p-8 text-center">
           <p className="text-gray-500">
-            {searchTerm
-              ? "Nenhuma oferta encontrada com esse nome."
-              : "Nenhuma oferta adicionada ainda. Clique no botão acima para começar."}
+            Nenhuma oferta encontrada com os filtros atuais.
           </p>
         </div>
       );
@@ -82,18 +99,49 @@ export default function Home() {
         </div>
       </header>
       <main className="container mx-auto p-4 sm:p-6">
-        <div className="mb-6 flex flex-col items-stretch gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="relative flex-grow">
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-grow flex-col gap-4 sm:flex-row">
             <Input
               type="text"
               placeholder="Buscar ofertas pelo nome..."
-              className="w-full"
+              className="w-full sm:flex-grow"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
+            <Select value={platformFilter} onValueChange={setPlatformFilter}>
+              <SelectTrigger className="w-full sm:w-[200px]">
+                <SelectValue placeholder="Filtrar por plataforma" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as Plataformas</SelectItem>
+                <SelectItem value="Google Ads">Google Ads</SelectItem>
+                <SelectItem value="Facebook Ads">Facebook Ads</SelectItem>
+                <SelectItem value="TikTok Ads">TikTok Ads</SelectItem>
+                <SelectItem value="Outra">Outra</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={nicheFilter}
+              onValueChange={setNicheFilter}
+              disabled={uniqueNiches.length === 0}
+            >
+              <SelectTrigger className="w-full sm:w-[200px]">
+                <SelectValue placeholder="Filtrar por nicho" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os Nichos</SelectItem>
+                {uniqueNiches.map((niche) => (
+                  <SelectItem key={niche} value={niche}>
+                    {niche}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <Link href="/offers/new" passHref>
-            <Button className="w-full sm:w-auto">Adicionar Nova Oferta</Button>
+            <Button className="w-full shrink-0 md:w-auto">
+              Adicionar Nova Oferta
+            </Button>
           </Link>
         </div>
         {renderContent()}
