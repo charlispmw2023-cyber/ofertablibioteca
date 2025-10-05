@@ -1,6 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "sqmnxftsuvdtawmivifs.supabase.co",
+        port: "",
+        pathname: "/storage/v1/object/public/offer_images/**",
+      },
+    ],
+  },
   webpack: (config) => {
     if (process.env.NODE_ENV === "development") {
       config.module.rules.push({
