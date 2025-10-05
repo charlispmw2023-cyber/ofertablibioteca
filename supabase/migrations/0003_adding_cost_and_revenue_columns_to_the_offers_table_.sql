@@ -1,0 +1,3 @@
+ALTER TABLE public.offers
+ADD COLUMN cost NUMERIC,
+ADD COLUMN revenue NUMERIC;

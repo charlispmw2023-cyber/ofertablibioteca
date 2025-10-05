@@ -40,6 +40,8 @@ const offerFormSchema = z.object({
   thank_you_page_link: z.string().url().optional().or(z.literal("")),
   platform: z.string().min(1, { message: "Selecione uma plataforma." }),
   niche: z.string().optional(),
+  cost: z.coerce.number().optional(),
+  revenue: z.coerce.number().optional(),
   drive_link: z.string().url().optional().or(z.literal("")),
 });
 
@@ -66,6 +68,8 @@ export function OfferForm({ initialData }: OfferFormProps) {
       thank_you_page_link: initialData?.thank_you_page_link ?? "",
       platform: initialData?.platform ?? "",
       niche: initialData?.niche ?? "",
+      cost: initialData?.cost ?? undefined,
+      revenue: initialData?.revenue ?? undefined,
       drive_link: initialData?.drive_link ?? "",
     },
   });
@@ -163,6 +167,35 @@ export function OfferForm({ initialData }: OfferFormProps) {
                     accept="image/*"
                     onChange={(e) => field.onChange(e.target.files)}
                   />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="cost"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Custo (Investimento)</FormLabel>
+                <FormControl>
+                  <Input type="number" placeholder="Ex: 150.50" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="revenue"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Faturamento (Receita)</FormLabel>
+                <FormControl>
+                  <Input type="number" placeholder="Ex: 800.00" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
