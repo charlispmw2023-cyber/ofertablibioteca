@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useRouter } from "next/navigation";
+import type { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -25,6 +27,7 @@ type SortOption = "created_at" | "profit" | "roi" | "name";
 const OFFERS_PER_PAGE = 12;
 
 export default function Home() {
+  const [user, setUser] = useState<User | null>(null);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -35,39 +38,44 @@ export default function Home() {
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalOffers, setTotalOffers] = useState(0);
+  const supabase = createClientComponentClient();
+  const router = useRouter();
 
   useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setUser(session.user);
+      } else {
+        router.push("/login");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase, router]);
+
+  useEffect(() => {
+    if (!user) return;
+
     const getOffers = async () => {
       setLoading(true);
       
       let query = supabase.from("offers").select("*", { count: "exact" });
 
-      // Filtering
-      if (searchTerm) {
-        query = query.ilike("name", `%${searchTerm}%`);
-      }
-      if (platformFilter !== "all") {
-        query = query.eq("platform", platformFilter);
-      }
-      if (nicheFilter !== "all") {
-        query = query.eq("niche", nicheFilter);
-      }
-      if (scaleFilter !== "all") {
-        query = query.eq("scale_status", scaleFilter);
-      }
+      if (searchTerm) query = query.ilike("name", `%${searchTerm}%`);
+      if (platformFilter !== "all") query = query.eq("platform", platformFilter);
+      if (nicheFilter !== "all") query = query.eq("niche", nicheFilter);
+      if (scaleFilter !== "all") query = query.eq("scale_status", scaleFilter);
 
-      // Sorting
       switch (sortOption) {
         case "name":
           query = query.order("name", { ascending: true });
           break;
-        // Note: Sorting by profit/ROI on the server is complex.
-        // We will sort the fetched page data on the client for now.
         default:
           query = query.order("created_at", { ascending: false });
       }
 
-      // Pagination
       const from = (currentPage - 1) * OFFERS_PER_PAGE;
       const to = from + OFFERS_PER_PAGE - 1;
       query = query.range(from, to);
@@ -85,7 +93,13 @@ export default function Home() {
     };
 
     getOffers();
-  }, [currentPage, searchTerm, platformFilter, nicheFilter, scaleFilter, sortOption]);
+  }, [currentPage, searchTerm, platformFilter, nicheFilter, scaleFilter, sortOption, user]);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  };
 
   const uniqueNiches = [
     ...new Set(offers.map((offer) => offer.niche).filter(Boolean)),
@@ -102,66 +116,37 @@ export default function Home() {
           const roiB = (b.cost ?? 0) > 0 ? ((b.revenue ?? 0) - (b.cost ?? 0)) / (b.cost ?? 1) : -Infinity;
           return roiB - roiA;
         default:
-          return 0; // Already sorted by server for name/date
+          return 0;
       }
     });
 
   const handleExport = async () => {
-    toast.info("Exportando todas as ofertas...");
+    toast.info("Exportando todas as suas ofertas...");
     const { data: allOffers, error } = await supabase.from("offers").select("*");
     if (error || !allOffers) {
       toast.error("Falha ao buscar dados para exportação.");
       return;
     }
-    const fileName = `todas_ofertas_${new Date().toISOString().split("T")[0]}.csv`;
+    const fileName = `suas_ofertas_${new Date().toISOString().split("T")[0]}.csv`;
     exportToCsv(allOffers, fileName);
     toast.success(`${allOffers.length} ofertas exportadas com sucesso!`);
   };
 
   const totalPages = Math.ceil(totalOffers / OFFERS_PER_PAGE);
 
-  const renderContent = () => {
-    if (loading) {
-      return (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {[...Array(OFFERS_PER_PAGE)].map((_, i) => (
-            <div key={i} className="flex flex-col space-y-3">
-              <Skeleton className="h-[160px] w-full rounded-xl" />
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-              </div>
-            </div>
-          ))}
-        </div>
-      );
-    }
-
-    if (sortedOffers.length === 0) {
-      return (
-        <div className="rounded-lg border bg-card p-8 text-center text-card-foreground">
-          <p className="text-muted-foreground">
-            Nenhuma oferta encontrada com os filtros atuais.
-          </p>
-        </div>
-      );
-    }
-
-    return (
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {sortedOffers.map((offer) => (
-          <OfferCard key={offer.id} offer={offer} />
-        ))}
-      </div>
-    );
-  };
+  if (!user) {
+    return <div className="flex min-h-screen items-center justify-center"><p>Carregando...</p></div>;
+  }
 
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-10 border-b bg-card/95 backdrop-blur-sm">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <h1 className="text-xl font-semibold">Biblioteca de Ofertas</h1>
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={handleSignOut}>Sair</Button>
+            <ThemeToggle />
+          </div>
         </div>
       </header>
       <main className="container mx-auto p-4 sm:p-6">
@@ -257,7 +242,31 @@ export default function Home() {
             </Select>
           </div>
         </div>
-        {renderContent()}
+        {loading ? (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {[...Array(OFFERS_PER_PAGE)].map((_, i) => (
+              <div key={i} className="flex flex-col space-y-3">
+                <Skeleton className="h-[160px] w-full rounded-xl" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : sortedOffers.length === 0 ? (
+          <div className="rounded-lg border bg-card p-8 text-center text-card-foreground">
+            <p className="text-muted-foreground">
+              Nenhuma oferta encontrada.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {sortedOffers.map((offer) => (
+              <OfferCard key={offer.id} offer={offer} />
+            ))}
+          </div>
+        )}
         {totalPages > 1 && (
           <Pagination className="mt-8">
             <PaginationContent>

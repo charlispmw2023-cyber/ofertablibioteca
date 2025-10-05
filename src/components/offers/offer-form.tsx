@@ -5,14 +5,13 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { supabase } from "@/integrations/supabase/client";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 import type { Offer } from "./offer-card";
 
-// Import the new modular sections
 import { SpyToolSection } from "./form-sections/spy-tool-section";
 import { BasicInfoSection } from "./form-sections/basic-info-section";
 import { ScaleStatusSection } from "./form-sections/scale-status-section";
@@ -52,6 +51,7 @@ export function OfferForm({ initialData }: OfferFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [scrapedImageUrl, setScrapedImageUrl] = useState<string | null>(null);
   const router = useRouter();
+  const supabase = createClientComponentClient();
   const isEditMode = !!initialData;
 
   const form = useForm<OfferFormValues>({
@@ -84,12 +84,15 @@ export function OfferForm({ initialData }: OfferFormProps) {
     );
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado.");
+
       let imageUrl = initialData?.image_url;
       const imageFile = values.image?.[0];
 
       if (imageFile) {
         const fileExt = imageFile.name.split(".").pop();
-        const fileName = `${uuidv4()}.${fileExt}`;
+        const fileName = `${user.id}/${uuidv4()}.${fileExt}`;
         const { error: uploadError } = await supabase.storage
           .from("offer_images")
           .upload(fileName, imageFile);
@@ -106,11 +109,16 @@ export function OfferForm({ initialData }: OfferFormProps) {
       }
 
       const { image, ...offerData } = values;
+      const dataToUpsert = {
+        ...offerData,
+        image_url: imageUrl,
+        user_id: user.id,
+      };
 
       if (isEditMode) {
         const { error } = await supabase
           .from("offers")
-          .update({ ...offerData, image_url: imageUrl })
+          .update(dataToUpsert)
           .eq("id", initialData.id);
         if (error)
           throw new Error(`Erro ao atualizar a oferta: ${error.message}`);
@@ -123,7 +131,7 @@ export function OfferForm({ initialData }: OfferFormProps) {
         }
         const { error } = await supabase
           .from("offers")
-          .insert({ ...offerData, image_url: imageUrl });
+          .insert(dataToUpsert);
         if (error) throw new Error(`Erro ao salvar a oferta: ${error.message}`);
         toast.success("Oferta salva com sucesso!", { id: toastId });
       }
