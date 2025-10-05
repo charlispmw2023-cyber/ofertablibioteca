@@ -22,6 +22,7 @@ export type Offer = {
   niche?: string | null;
   cost?: number | null;
   revenue?: number | null;
+  scale_status?: string | null;
   created_at: string;
   sales_page_link?: string;
   checkout_link?: string;
@@ -41,6 +42,21 @@ const formatCurrency = (value: number) => {
     style: "currency",
     currency: "BRL",
   }).format(value);
+};
+
+const getScaleBadgeClass = (status: string) => {
+  switch (status) {
+    case "Inicio":
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+    case "Pré escala":
+      return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
+    case "Escalando":
+      return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300";
+    case "ESCALADISSIMA":
+      return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 font-bold";
+    default:
+      return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
+  }
 };
 
 export function OfferCard({ offer }: OfferCardProps) {
@@ -66,6 +82,15 @@ export function OfferCard({ offer }: OfferCardProps) {
       </CardHeader>
       <CardContent className="flex flex-grow flex-col p-4">
         <div className="flex-grow">
+          {offer.scale_status && (
+            <div
+              className={`mb-2 inline-block rounded-full px-3 py-1 text-xs font-semibold ${getScaleBadgeClass(
+                offer.scale_status
+              )}`}
+            >
+              {offer.scale_status}
+            </div>
+          )}
           <CardTitle className="mb-1 text-lg">{offer.name}</CardTitle>
           <div className="space-y-1">
             <CardDescription>

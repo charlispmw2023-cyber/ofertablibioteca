@@ -28,13 +28,13 @@ import { v4 as uuidv4 } from "uuid";
 import type { Offer } from "./offer-card";
 import { Wand2 } from "lucide-react";
 import Image from "next/image";
-import { Separator } from "../ui/separator";
 
 const offerFormSchema = z.object({
   name: z.string().min(2, {
     message: "O nome deve ter pelo menos 2 caracteres.",
   }),
   image: z.any().optional(),
+  scale_status: z.string().optional(),
   sales_page_link: z.string().url().optional().or(z.literal("")),
   checkout_link: z.string().url().optional().or(z.literal("")),
   upsell_1_link: z.string().url().optional().or(z.literal("")),
@@ -66,6 +66,7 @@ export function OfferForm({ initialData }: OfferFormProps) {
     resolver: zodResolver(offerFormSchema),
     defaultValues: {
       name: initialData?.name ?? "",
+      scale_status: initialData?.scale_status ?? "",
       sales_page_link: initialData?.sales_page_link ?? "",
       checkout_link: initialData?.checkout_link ?? "",
       upsell_1_link: initialData?.upsell_1_link ?? "",
@@ -239,6 +240,33 @@ export function OfferForm({ initialData }: OfferFormProps) {
               )}
             />
           </div>
+
+          <FormField
+            control={form.control}
+            name="scale_status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Grau de Escala</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o status da escala" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="Inicio">Inicio</SelectItem>
+                    <SelectItem value="Pré escala">Pré escala</SelectItem>
+                    <SelectItem value="Escalando">Escalando</SelectItem>
+                    <SelectItem value="ESCALADISSIMA">ESCALADISSIMA</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
             <FormField

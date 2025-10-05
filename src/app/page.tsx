@@ -23,6 +23,7 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
   const [platformFilter, setPlatformFilter] = useState("all");
   const [nicheFilter, setNicheFilter] = useState("all");
+  const [scaleFilter, setScaleFilter] = useState("all");
 
   useEffect(() => {
     const getOffers = async () => {
@@ -54,7 +55,10 @@ export default function Home() {
       (offer) =>
         platformFilter === "all" || offer.platform === platformFilter
     )
-    .filter((offer) => nicheFilter === "all" || offer.niche === nicheFilter);
+    .filter((offer) => nicheFilter === "all" || offer.niche === nicheFilter)
+    .filter(
+      (offer) => scaleFilter === "all" || offer.scale_status === scaleFilter
+    );
 
   const renderContent = () => {
     if (loading) {
@@ -108,8 +112,8 @@ export default function Home() {
         </div>
       </header>
       <main className="container mx-auto p-4 sm:p-6">
-        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex flex-grow flex-col gap-4 sm:flex-row">
+        <div className="mb-6 flex flex-col gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row">
             <Input
               type="text"
               placeholder="Buscar ofertas pelo nome..."
@@ -117,8 +121,15 @@ export default function Home() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
+            <Link href="/offers/new" passHref className="w-full sm:w-auto">
+              <Button className="w-full shrink-0 sm:w-auto">
+                Adicionar Nova Oferta
+              </Button>
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Select value={platformFilter} onValueChange={setPlatformFilter}>
-              <SelectTrigger className="w-full sm:w-[200px]">
+              <SelectTrigger>
                 <SelectValue placeholder="Filtrar por plataforma" />
               </SelectTrigger>
               <SelectContent>
@@ -134,7 +145,7 @@ export default function Home() {
               onValueChange={setNicheFilter}
               disabled={uniqueNiches.length === 0}
             >
-              <SelectTrigger className="w-full sm:w-[200px]">
+              <SelectTrigger>
                 <SelectValue placeholder="Filtrar por nicho" />
               </SelectTrigger>
               <SelectContent>
@@ -146,12 +157,19 @@ export default function Home() {
                 ))}
               </SelectContent>
             </Select>
+            <Select value={scaleFilter} onValueChange={setScaleFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Filtrar por escala" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os Status</SelectItem>
+                <SelectItem value="Inicio">Inicio</SelectItem>
+                <SelectItem value="Pré escala">Pré escala</SelectItem>
+                <SelectItem value="Escalando">Escalando</SelectItem>
+                <SelectItem value="ESCALADISSIMA">ESCALADISSIMA</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          <Link href="/offers/new" passHref>
-            <Button className="w-full shrink-0 md:w-auto">
-              Adicionar Nova Oferta
-            </Button>
-          </Link>
         </div>
         {renderContent()}
       </main>
