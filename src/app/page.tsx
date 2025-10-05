@@ -15,9 +15,10 @@ import Link from "next/link";
 import { OfferCard, type Offer } from "@/components/offers/offer-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { BarChart, Download } from "lucide-react";
+import { Download, Upload } from "lucide-react";
 import { exportToCsv } from "@/lib/csv-export";
 import { toast } from "sonner";
+import { ImportOffersDialog } from "@/components/offers/import-offers-dialog";
 
 export default function Home() {
   const [offers, setOffers] = useState<Offer[]>([]);
@@ -26,6 +27,7 @@ export default function Home() {
   const [platformFilter, setPlatformFilter] = useState("all");
   const [nicheFilter, setNicheFilter] = useState("all");
   const [scaleFilter, setScaleFilter] = useState("all");
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 
   useEffect(() => {
     const getOffers = async () => {
@@ -113,14 +115,7 @@ export default function Home() {
       <header className="sticky top-0 z-10 border-b bg-card/95 backdrop-blur-sm">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <h1 className="text-xl font-semibold">Biblioteca de Ofertas</h1>
-          <div className="flex items-center gap-2">
-            <Link href="/analytics" passHref>
-              <Button variant="outline" size="icon" aria-label="Analytics">
-                <BarChart className="h-4 w-4" />
-              </Button>
-            </Link>
-            <ThemeToggle />
-          </div>
+          <ThemeToggle />
         </div>
       </header>
       <main className="container mx-auto p-4 sm:p-6">
@@ -136,8 +131,16 @@ export default function Home() {
             <div className="flex w-full items-center gap-2 sm:w-auto">
               <Button
                 variant="outline"
+                onClick={() => setIsImportDialogOpen(true)}
+                className="w-1/3 sm:w-auto"
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                Importar
+              </Button>
+              <Button
+                variant="outline"
                 onClick={handleExport}
-                className="w-1/2 sm:w-auto"
+                className="w-1/3 sm:w-auto"
               >
                 <Download className="mr-2 h-4 w-4" />
                 Exportar
@@ -145,7 +148,7 @@ export default function Home() {
               <Link
                 href="/offers/new"
                 passHref
-                className="w-1/2 sm:w-auto"
+                className="w-1/3 sm:w-auto"
               >
                 <Button className="w-full shrink-0">
                   Adicionar Nova Oferta
@@ -199,6 +202,10 @@ export default function Home() {
         </div>
         {renderContent()}
       </main>
+      <ImportOffersDialog
+        isOpen={isImportDialogOpen}
+        onClose={() => setIsImportDialogOpen(false)}
+      />
     </div>
   );
 }
