@@ -19,8 +19,10 @@ import { Download, Upload } from "lucide-react";
 import { exportToCsv } from "@/lib/csv-export";
 import { toast } from "sonner";
 import { ImportOffersDialog } from "@/components/offers/import-offers-dialog";
+import { Pagination, PaginationContent, PaginationItem, PaginationPrevious, PaginationLink, PaginationNext } from "@/components/ui/pagination";
 
 type SortOption = "created_at" | "profit" | "roi" | "name";
+const OFFERS_PER_PAGE = 12;
 
 export default function Home() {
   const [offers, setOffers] = useState<Offer[]>([]);
@@ -31,42 +33,65 @@ export default function Home() {
   const [scaleFilter, setScaleFilter] = useState("all");
   const [sortOption, setSortOption] = useState<SortOption>("created_at");
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalOffers, setTotalOffers] = useState(0);
 
   useEffect(() => {
     const getOffers = async () => {
-      const { data: offersData, error } = await supabase
-        .from("offers")
-        .select("*")
-        .order("created_at", { ascending: false });
+      setLoading(true);
+      
+      let query = supabase.from("offers").select("*", { count: "exact" });
+
+      // Filtering
+      if (searchTerm) {
+        query = query.ilike("name", `%${searchTerm}%`);
+      }
+      if (platformFilter !== "all") {
+        query = query.eq("platform", platformFilter);
+      }
+      if (nicheFilter !== "all") {
+        query = query.eq("niche", nicheFilter);
+      }
+      if (scaleFilter !== "all") {
+        query = query.eq("scale_status", scaleFilter);
+      }
+
+      // Sorting
+      switch (sortOption) {
+        case "name":
+          query = query.order("name", { ascending: true });
+          break;
+        // Note: Sorting by profit/ROI on the server is complex.
+        // We will sort the fetched page data on the client for now.
+        default:
+          query = query.order("created_at", { ascending: false });
+      }
+
+      // Pagination
+      const from = (currentPage - 1) * OFFERS_PER_PAGE;
+      const to = from + OFFERS_PER_PAGE - 1;
+      query = query.range(from, to);
+
+      const { data: offersData, error, count } = await query;
 
       if (error) {
         console.error("Error fetching offers:", error);
+        toast.error("Falha ao carregar as ofertas.");
       } else {
         setOffers(offersData || []);
+        setTotalOffers(count || 0);
       }
       setLoading(false);
     };
 
     getOffers();
-  }, []);
+  }, [currentPage, searchTerm, platformFilter, nicheFilter, scaleFilter, sortOption]);
 
   const uniqueNiches = [
     ...new Set(offers.map((offer) => offer.niche).filter(Boolean)),
   ] as string[];
 
-  const sortedAndFilteredOffers = offers
-    .filter((offer) =>
-      offer.name.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .filter(
-      (offer) =>
-        platformFilter === "all" || offer.platform === platformFilter
-    )
-    .filter((offer) => nicheFilter === "all" || offer.niche === nicheFilter)
-    .filter(
-      (offer) => scaleFilter === "all" || offer.scale_status === scaleFilter
-    )
-    .sort((a, b) => {
+  const sortedOffers = [...offers].sort((a, b) => {
       switch (sortOption) {
         case "profit":
           const profitA = (a.revenue ?? 0) - (a.cost ?? 0);
@@ -76,29 +101,30 @@ export default function Home() {
           const roiA = (a.cost ?? 0) > 0 ? ((a.revenue ?? 0) - (a.cost ?? 0)) / (a.cost ?? 1) : -Infinity;
           const roiB = (b.cost ?? 0) > 0 ? ((b.revenue ?? 0) - (b.cost ?? 0)) / (b.cost ?? 1) : -Infinity;
           return roiB - roiA;
-        case "name":
-          return a.name.localeCompare(b.name);
-        case "created_at":
         default:
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+          return 0; // Already sorted by server for name/date
       }
     });
 
-  const handleExport = () => {
-    if (sortedAndFilteredOffers.length === 0) {
-      toast.error("Nenhuma oferta para exportar com os filtros atuais.");
+  const handleExport = async () => {
+    toast.info("Exportando todas as ofertas...");
+    const { data: allOffers, error } = await supabase.from("offers").select("*");
+    if (error || !allOffers) {
+      toast.error("Falha ao buscar dados para exportação.");
       return;
     }
-    const fileName = `ofertas_${new Date().toISOString().split("T")[0]}.csv`;
-    exportToCsv(sortedAndFilteredOffers, fileName);
-    toast.success(`${sortedAndFilteredOffers.length} ofertas exportadas com sucesso!`);
+    const fileName = `todas_ofertas_${new Date().toISOString().split("T")[0]}.csv`;
+    exportToCsv(allOffers, fileName);
+    toast.success(`${allOffers.length} ofertas exportadas com sucesso!`);
   };
+
+  const totalPages = Math.ceil(totalOffers / OFFERS_PER_PAGE);
 
   const renderContent = () => {
     if (loading) {
       return (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {[...Array(8)].map((_, i) => (
+          {[...Array(OFFERS_PER_PAGE)].map((_, i) => (
             <div key={i} className="flex flex-col space-y-3">
               <Skeleton className="h-[160px] w-full rounded-xl" />
               <div className="space-y-2">
@@ -111,7 +137,7 @@ export default function Home() {
       );
     }
 
-    if (sortedAndFilteredOffers.length === 0) {
+    if (sortedOffers.length === 0) {
       return (
         <div className="rounded-lg border bg-card p-8 text-center text-card-foreground">
           <p className="text-muted-foreground">
@@ -123,7 +149,7 @@ export default function Home() {
 
     return (
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {sortedAndFilteredOffers.map((offer) => (
+        {sortedOffers.map((offer) => (
           <OfferCard key={offer.id} offer={offer} />
         ))}
       </div>
@@ -232,6 +258,37 @@ export default function Home() {
           </div>
         </div>
         {renderContent()}
+        {totalPages > 1 && (
+          <Pagination className="mt-8">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setCurrentPage((prev) => Math.max(prev - 1, 1));
+                  }}
+                  className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+              <PaginationItem className="hidden sm:flex">
+                <span className="px-4 py-2 text-sm">
+                  Página {currentPage} de {totalPages}
+                </span>
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+                  }}
+                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        )}
       </main>
       <ImportOffersDialog
         isOpen={isImportDialogOpen}
