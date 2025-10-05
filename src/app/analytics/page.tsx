@@ -27,6 +27,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { SummaryCard } from "../../components/analytics/summary-card";
+import { TopOffersList } from "../../components/analytics/top-offers-list";
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("pt-BR", {
@@ -51,6 +52,7 @@ export default function AnalyticsPage() {
     getOffers();
   }, []);
 
+  // --- Calculations ---
   const totalCost = offers.reduce((acc, offer) => acc + (offer.cost ?? 0), 0);
   const totalRevenue = offers.reduce(
     (acc, offer) => acc + (offer.revenue ?? 0),
@@ -68,7 +70,6 @@ export default function AnalyticsPage() {
     },
     {} as Record<string, number>
   );
-
   const profitByPlatformData = Object.entries(profitByPlatform)
     .map(([platform, profit]) => ({ platform, profit }))
     .sort((a, b) => b.profit - a.profit);
@@ -81,10 +82,29 @@ export default function AnalyticsPage() {
     },
     {} as Record<string, number>
   );
-
   const offersByNicheData = Object.entries(offersByNiche).map(
     ([name, value]) => ({ name, value })
   );
+
+  const profitByNiche = offers.reduce(
+    (acc, offer) => {
+      const niche = offer.niche || "Sem Nicho";
+      const profit = (offer.revenue ?? 0) - (offer.cost ?? 0);
+      acc[niche] = (acc[niche] || 0) + profit;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+  const profitByNicheData = Object.entries(profitByNiche)
+    .map(([niche, profit]) => ({ niche, profit }))
+    .sort((a, b) => b.profit - a.profit);
+
+  const top5ProfitableOffers = [...offers]
+    .sort(
+      (a, b) =>
+        (b.revenue ?? 0) - (b.cost ?? 0) - ((a.revenue ?? 0) - (a.cost ?? 0))
+    )
+    .slice(0, 5);
 
   if (loading) {
     return (
@@ -132,8 +152,8 @@ export default function AnalyticsPage() {
           />
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
+        <div className="mb-6 grid gap-6 lg:grid-cols-3">
+          <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle>Lucro por Plataforma</CardTitle>
             </CardHeader>
@@ -143,6 +163,50 @@ export default function AnalyticsPage() {
                   <BarChart data={profitByPlatformData}>
                     <XAxis
                       dataKey="platform"
+                      stroke="hsl(var(--foreground))"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      stroke="hsl(var(--foreground))"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(value) => `${formatCurrency(value as number)}`}
+                    />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Bar
+                      dataKey="profit"
+                      fill="hsl(var(--primary))"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Top 5 Ofertas Lucrativas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TopOffersList offers={top5ProfitableOffers} />
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Lucro por Nicho</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={{}} className="h-[300px] w-full">
+                <ResponsiveContainer>
+                  <BarChart data={profitByNicheData}>
+                    <XAxis
+                      dataKey="niche"
                       stroke="hsl(var(--foreground))"
                       fontSize={12}
                       tickLine={false}
