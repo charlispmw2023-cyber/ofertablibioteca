@@ -11,7 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MadeWithDyad } from "@/components/made-with-dyad";
 import Link from "next/link";
 import { OfferCard, type Offer } from "@/components/offers/offer-card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -156,7 +155,6 @@ export default function Home() {
         </div>
         {renderContent()}
       </main>
-      <MadeWithDyad />
     </div>
   );
 }
