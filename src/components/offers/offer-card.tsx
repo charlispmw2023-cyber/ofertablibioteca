@@ -8,11 +8,21 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
 import Image from "next/image";
-import { formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { OfferActions } from "./offer-actions";
+import { NotebookText } from "lucide-react";
 
 export type Offer = {
   id: string;
@@ -23,6 +33,8 @@ export type Offer = {
   cost?: number | null;
   revenue?: number | null;
   scale_status?: string | null;
+  observations?: string | null;
+  running_since?: string | null;
   created_at: string;
   sales_page_link?: string;
   checkout_link?: string;
@@ -44,19 +56,11 @@ const formatCurrency = (value: number) => {
   }).format(value);
 };
 
-const getScaleBadgeClass = (status: string) => {
-  switch (status) {
-    case "Inicio":
-      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
-    case "Pré escala":
-      return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
-    case "Escalando":
-      return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300";
-    case "ESCALADISSIMA":
-      return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 font-bold";
-    default:
-      return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
-  }
+const scaleValues: { [key: string]: number } = {
+  "Inicio": 25,
+  "Pré escala": 50,
+  "Escalando": 75,
+  "ESCALADISSIMA": 100,
 };
 
 export function OfferCard({ offer }: OfferCardProps) {
@@ -64,6 +68,7 @@ export function OfferCard({ offer }: OfferCardProps) {
   const revenue = offer.revenue ?? 0;
   const profit = revenue - cost;
   const roi = cost > 0 ? (profit / cost) * 100 : 0;
+  const progressValue = offer.scale_status ? scaleValues[offer.scale_status] : 0;
 
   const hasFinancials = offer.cost != null || offer.revenue != null;
 
@@ -82,15 +87,6 @@ export function OfferCard({ offer }: OfferCardProps) {
       </CardHeader>
       <CardContent className="flex flex-grow flex-col p-4">
         <div className="flex-grow">
-          {offer.scale_status && (
-            <div
-              className={`mb-2 inline-block rounded-full px-3 py-1 text-xs font-semibold ${getScaleBadgeClass(
-                offer.scale_status
-              )}`}
-            >
-              {offer.scale_status}
-            </div>
-          )}
           <CardTitle className="mb-1 text-lg">{offer.name}</CardTitle>
           <div className="space-y-1">
             <CardDescription>
@@ -101,7 +97,26 @@ export function OfferCard({ offer }: OfferCardProps) {
                 Nicho: <span className="font-semibold">{offer.niche}</span>
               </CardDescription>
             )}
+            {offer.running_since && (
+              <CardDescription className="text-xs">
+                Rodando desde:{" "}
+                <span className="font-semibold">
+                  {format(new Date(offer.running_since), "dd/MM/yyyy", {
+                    locale: ptBR,
+                  })}
+                </span>
+              </CardDescription>
+            )}
           </div>
+          {offer.scale_status && (
+            <div className="mt-4">
+              <div className="mb-1 flex justify-between text-xs font-medium text-muted-foreground">
+                <span>Grau de Escala</span>
+                <span>{offer.scale_status}</span>
+              </div>
+              <Progress value={progressValue} className="h-2" />
+            </div>
+          )}
         </div>
         {hasFinancials && (
           <>
@@ -110,7 +125,9 @@ export function OfferCard({ offer }: OfferCardProps) {
               <div className="text-muted-foreground">Custo</div>
               <div className="text-right font-medium">{formatCurrency(cost)}</div>
               <div className="text-muted-foreground">Receita</div>
-              <div className="text-right font-medium">{formatCurrency(revenue)}</div>
+              <div className="text-right font-medium">
+                {formatCurrency(revenue)}
+              </div>
               <div className="font-semibold text-muted-foreground">Lucro</div>
               <div
                 className={`text-right font-bold ${
@@ -132,12 +149,31 @@ export function OfferCard({ offer }: OfferCardProps) {
         )}
       </CardContent>
       <CardFooter className="flex items-center justify-between p-4 pt-2">
-        <p className="text-sm text-muted-foreground">
-          {formatDistanceToNow(new Date(offer.created_at), {
-            addSuffix: true,
-            locale: ptBR,
-          })}
-        </p>
+        <div className="flex items-center gap-2">
+          {offer.observations && (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <NotebookText className="h-4 w-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Observações sobre "{offer.name}"</DialogTitle>
+                </DialogHeader>
+                <div className="prose prose-sm dark:prose-invert whitespace-pre-wrap">
+                  {offer.observations}
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
+          <p className="text-sm text-muted-foreground">
+            {formatDistanceToNow(new Date(offer.created_at), {
+              addSuffix: true,
+              locale: ptBR,
+            })}
+          </p>
+        </div>
         <OfferActions offer={offer} />
       </CardFooter>
     </Card>

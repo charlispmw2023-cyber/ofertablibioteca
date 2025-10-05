@@ -19,15 +19,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 import type { Offer } from "./offer-card";
-import { Wand2 } from "lucide-react";
+import { CalendarIcon, Wand2 } from "lucide-react";
 import Image from "next/image";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 const offerFormSchema = z.object({
   name: z.string().min(2, {
@@ -35,6 +45,8 @@ const offerFormSchema = z.object({
   }),
   image: z.any().optional(),
   scale_status: z.string().optional(),
+  observations: z.string().optional(),
+  running_since: z.date().optional(),
   sales_page_link: z.string().url().optional().or(z.literal("")),
   checkout_link: z.string().url().optional().or(z.literal("")),
   upsell_1_link: z.string().url().optional().or(z.literal("")),
@@ -67,6 +79,10 @@ export function OfferForm({ initialData }: OfferFormProps) {
     defaultValues: {
       name: initialData?.name ?? "",
       scale_status: initialData?.scale_status ?? "",
+      observations: initialData?.observations ?? "",
+      running_since: initialData?.running_since
+        ? new Date(initialData.running_since)
+        : undefined,
       sales_page_link: initialData?.sales_page_link ?? "",
       checkout_link: initialData?.checkout_link ?? "",
       upsell_1_link: initialData?.upsell_1_link ?? "",
@@ -105,9 +121,8 @@ export function OfferForm({ initialData }: OfferFormProps) {
       if (data.imageUrl) {
         setScrapedImageUrl(data.imageUrl);
       }
-      
-      toast.success(successMessage, { id: toastId });
 
+      toast.success(successMessage, { id: toastId });
     } catch (error) {
       console.error(error);
       toast.error(
@@ -136,8 +151,9 @@ export function OfferForm({ initialData }: OfferFormProps) {
           .from("offer_images")
           .upload(fileName, imageFile);
 
-        if (uploadError) throw new Error(`Erro no upload da imagem: ${uploadError.message}`);
-        
+        if (uploadError)
+          throw new Error(`Erro no upload da imagem: ${uploadError.message}`);
+
         const { data: publicUrlData } = supabase.storage
           .from("offer_images")
           .getPublicUrl(fileName);
@@ -147,19 +163,24 @@ export function OfferForm({ initialData }: OfferFormProps) {
       }
 
       const { image, ...offerData } = values;
-      
+
       if (isEditMode) {
         const { error } = await supabase
           .from("offers")
           .update({ ...offerData, image_url: imageUrl })
           .eq("id", initialData.id);
-        if (error) throw new Error(`Erro ao atualizar a oferta: ${error.message}`);
+        if (error)
+          throw new Error(`Erro ao atualizar a oferta: ${error.message}`);
         toast.success("Oferta atualizada com sucesso!", { id: toastId });
       } else {
         if (!imageUrl) {
-          throw new Error("A imagem é obrigatória. Espione uma URL ou faça o upload de um arquivo.");
+          throw new Error(
+            "A imagem é obrigatória. Espione uma URL ou faça o upload de um arquivo."
+          );
         }
-        const { error } = await supabase.from("offers").insert({ ...offerData, image_url: imageUrl });
+        const { error } = await supabase
+          .from("offers")
+          .insert({ ...offerData, image_url: imageUrl });
         if (error) throw new Error(`Erro ao salvar a oferta: ${error.message}`);
         toast.success("Oferta salva com sucesso!", { id: toastId });
       }
@@ -191,16 +212,28 @@ export function OfferForm({ initialData }: OfferFormProps) {
                 onChange={(e) => setSpyUrl(e.target.value)}
                 disabled={isSpying}
               />
-              <Button type="button" onClick={handleSpyUrl} disabled={isSpying || !spyUrl} className="shrink-0">
+              <Button
+                type="button"
+                onClick={handleSpyUrl}
+                disabled={isSpying || !spyUrl}
+                className="shrink-0"
+              >
                 <Wand2 className="mr-2 h-4 w-4" />
                 {isSpying ? "Espionando..." : "Espionar"}
               </Button>
             </div>
             {scrapedImageUrl && (
               <div>
-                <p className="mb-2 text-sm font-medium text-muted-foreground">Imagem encontrada (será usada se nenhuma for enviada):</p>
+                <p className="mb-2 text-sm font-medium text-muted-foreground">
+                  Imagem encontrada (será usada se nenhuma for enviada):
+                </p>
                 <div className="relative h-40 w-full overflow-hidden rounded-md border">
-                  <Image src={scrapedImageUrl} alt="Imagem espionada" layout="fill" objectFit="cover" />
+                  <Image
+                    src={scrapedImageUrl}
+                    alt="Imagem espionada"
+                    layout="fill"
+                    objectFit="cover"
+                  />
                 </div>
               </div>
             )}
@@ -241,32 +274,74 @@ export function OfferForm({ initialData }: OfferFormProps) {
             />
           </div>
 
-          <FormField
-            control={form.control}
-            name="scale_status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Grau de Escala</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o status da escala" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="Inicio">Inicio</SelectItem>
-                    <SelectItem value="Pré escala">Pré escala</SelectItem>
-                    <SelectItem value="Escalando">Escalando</SelectItem>
-                    <SelectItem value="ESCALADISSIMA">ESCALADISSIMA</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="scale_status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Grau de Escala</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o status da escala" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Inicio">Inicio</SelectItem>
+                      <SelectItem value="Pré escala">Pré escala</SelectItem>
+                      <SelectItem value="Escalando">Escalando</SelectItem>
+                      <SelectItem value="ESCALADISSIMA">
+                        ESCALADISSIMA
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="running_since"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Data de Início da Oferta</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP", { locale: ptBR })
+                          ) : (
+                            <span>Escolha uma data</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
             <FormField
@@ -296,6 +371,24 @@ export function OfferForm({ initialData }: OfferFormProps) {
               )}
             />
           </div>
+
+          <FormField
+            control={form.control}
+            name="observations"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Observações</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Adicione anotações sobre a oferta, como ângulos de copy, público, etc."
+                    className="resize-y"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormField
             control={form.control}
@@ -422,7 +515,7 @@ export function OfferForm({ initialData }: OfferFormProps) {
               )}
             />
           </div>
-          
+
           <FormField
             control={form.control}
             name="drive_link"
@@ -430,7 +523,10 @@ export function OfferForm({ initialData }: OfferFormProps) {
               <FormItem>
                 <FormLabel>Link do Drive</FormLabel>
                 <FormControl>
-                  <Input placeholder="https://drive.google.com/..." {...field} />
+                  <Input
+                    placeholder="https://drive.google.com/..."
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
