@@ -16,6 +16,7 @@ import Link from "next/link";
 import { OfferCard, type Offer } from "@/components/offers/offer-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { BarChart } from "lucide-react";
 
 export default function Home() {
   const [offers, setOffers] = useState<Offer[]>([]);
@@ -97,7 +98,14 @@ export default function Home() {
       <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-sm">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <h1 className="text-xl font-semibold">Biblioteca de Ofertas</h1>
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <Link href="/analytics" passHref>
+              <Button variant="outline" size="icon" aria-label="Analytics">
+                <BarChart className="h-4 w-4" />
+              </Button>
+            </Link>
+            <ThemeToggle />
+          </div>
         </div>
       </header>
       <main className="container mx-auto p-4 sm:p-6">
