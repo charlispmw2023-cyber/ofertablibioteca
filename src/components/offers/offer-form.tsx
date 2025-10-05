@@ -4,40 +4,22 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Form } from "@/components/ui/form";
 import { supabase } from "@/integrations/supabase/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 import type { Offer } from "./offer-card";
-import { CalendarIcon, Wand2 } from "lucide-react";
-import Image from "next/image";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { cn } from "@/lib/utils";
+
+// Import the new modular sections
+import { SpyToolSection } from "./form-sections/spy-tool-section";
+import { BasicInfoSection } from "./form-sections/basic-info-section";
+import { ScaleStatusSection } from "./form-sections/scale-status-section";
+import { FinancialsSection } from "./form-sections/financials-section";
+import { NotesSection } from "./form-sections/notes-section";
+import { LinksSection } from "./form-sections/links-section";
+import { OrganizationSection } from "./form-sections/organization-section";
 
 const offerFormSchema = z.object({
   name: z.string().min(2, {
@@ -68,8 +50,6 @@ interface OfferFormProps {
 
 export function OfferForm({ initialData }: OfferFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [spyUrl, setSpyUrl] = useState("");
-  const [isSpying, setIsSpying] = useState(false);
   const [scrapedImageUrl, setScrapedImageUrl] = useState<string | null>(null);
   const router = useRouter();
   const isEditMode = !!initialData;
@@ -96,43 +76,6 @@ export function OfferForm({ initialData }: OfferFormProps) {
       drive_link: initialData?.drive_link ?? "",
     },
   });
-
-  const handleSpyUrl = async () => {
-    if (!spyUrl) {
-      toast.error("Por favor, insira uma URL para espionar.");
-      return;
-    }
-    setIsSpying(true);
-    const toastId = toast.loading("Espionando URL...");
-
-    try {
-      const { data, error } = await supabase.functions.invoke("scrape-url", {
-        body: { url: spyUrl },
-      });
-
-      if (error) throw new Error(error.message);
-      if (data.error) throw new Error(data.error);
-
-      let successMessage = "Espionagem concluída!";
-      if (data.title) {
-        form.setValue("name", data.title);
-        successMessage = "Nome da oferta preenchido!";
-      }
-      if (data.imageUrl) {
-        setScrapedImageUrl(data.imageUrl);
-      }
-
-      toast.success(successMessage, { id: toastId });
-    } catch (error) {
-      console.error(error);
-      toast.error(
-        error instanceof Error ? error.message : "Falha ao espionar a URL.",
-        { id: toastId }
-      );
-    } finally {
-      setIsSpying(false);
-    }
-  };
 
   async function onSubmit(values: OfferFormValues) {
     setIsSubmitting(true);
@@ -202,336 +145,20 @@ export function OfferForm({ initialData }: OfferFormProps) {
     <Form {...form}>
       <div className="space-y-8">
         {!isEditMode && (
-          <div className="space-y-4 rounded-lg border p-4">
-            <h3 className="text-lg font-medium">Ferramenta Spy</h3>
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <Input
-                type="url"
-                placeholder="Cole a URL da página de vendas aqui..."
-                value={spyUrl}
-                onChange={(e) => setSpyUrl(e.target.value)}
-                disabled={isSpying}
-              />
-              <Button
-                type="button"
-                onClick={handleSpyUrl}
-                disabled={isSpying || !spyUrl}
-                className="shrink-0"
-              >
-                <Wand2 className="mr-2 h-4 w-4" />
-                {isSpying ? "Espionando..." : "Espionar"}
-              </Button>
-            </div>
-            {scrapedImageUrl && (
-              <div>
-                <p className="mb-2 text-sm font-medium text-muted-foreground">
-                  Imagem encontrada (será usada se nenhuma for enviada):
-                </p>
-                <div className="relative h-40 w-full overflow-hidden rounded-md border">
-                  <Image
-                    src={scrapedImageUrl}
-                    alt="Imagem espionada"
-                    layout="fill"
-                    objectFit="cover"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
+          <SpyToolSection
+            setValue={form.setValue}
+            setScrapedImageUrl={setScrapedImageUrl}
+            scrapedImageUrl={scrapedImageUrl}
+          />
         )}
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nome da Oferta</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ex: Ebook de Receitas Fit" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="image"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Substituir Imagem (Opcional)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => field.onChange(e.target.files)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-            <FormField
-              control={form.control}
-              name="scale_status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Grau de Escala</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o status da escala" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Inicio">Inicio</SelectItem>
-                      <SelectItem value="Pré escala">Pré escala</SelectItem>
-                      <SelectItem value="Escalando">Escalando</SelectItem>
-                      <SelectItem value="ESCALADISSIMA">
-                        ESCALADISSIMA
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="running_since"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Data de Início da Oferta</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, "PPP", { locale: ptBR })
-                          ) : (
-                            <span>Escolha uma data</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-            <FormField
-              control={form.control}
-              name="cost"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Custo (Investimento)</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="Ex: 150.50" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="revenue"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Faturamento (Receita)</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="Ex: 800.00" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <FormField
-            control={form.control}
-            name="observations"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Observações</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Adicione anotações sobre a oferta, como ângulos de copy, público, etc."
-                    className="resize-y"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="sales_page_link"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Link da Página de Vendas</FormLabel>
-                <FormControl>
-                  <Input placeholder="https://..." {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="checkout_link"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Link do Checkout</FormLabel>
-                <FormControl>
-                  <Input placeholder="https://..." {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-            <FormField
-              control={form.control}
-              name="upsell_1_link"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Upsell 1</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="upsell_2_link"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Upsell 2</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="upsell_3_link"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Upsell 3</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <FormField
-            control={form.control}
-            name="thank_you_page_link"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Link da Página de Obrigado</FormLabel>
-                <FormControl>
-                  <Input placeholder="https://..." {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-            <FormField
-              control={form.control}
-              name="platform"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Plataforma</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione a plataforma" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Google Ads">Google Ads</SelectItem>
-                      <SelectItem value="Facebook Ads">Facebook Ads</SelectItem>
-                      <SelectItem value="TikTok Ads">TikTok Ads</SelectItem>
-                      <SelectItem value="Outra">Outra</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="niche"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nicho</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ex: Saúde e Bem-estar" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <FormField
-            control={form.control}
-            name="drive_link"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Link do Drive</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="https://drive.google.com/..."
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <BasicInfoSection control={form.control} />
+          <ScaleStatusSection control={form.control} />
+          <FinancialsSection control={form.control} />
+          <OrganizationSection control={form.control} />
+          <LinksSection control={form.control} />
+          <NotesSection control={form.control} />
 
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting
