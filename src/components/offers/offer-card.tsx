@@ -69,6 +69,7 @@ export function OfferCard({ offer }: OfferCardProps) {
   const profit = revenue - cost;
   const roi = cost > 0 ? (profit / cost) * 100 : 0;
   const progressValue = offer.scale_status ? scaleValues[offer.scale_status] : 0;
+  const isOnFire = offer.scale_status === "ESCALADISSIMA";
 
   const hasFinancials = offer.cost != null || offer.revenue != null;
 
@@ -112,9 +113,14 @@ export function OfferCard({ offer }: OfferCardProps) {
             <div className="mt-4">
               <div className="mb-1 flex justify-between text-xs font-medium text-muted-foreground">
                 <span>Grau de Escala</span>
-                <span>{offer.scale_status}</span>
+                <span className={isOnFire ? "font-bold text-red-500" : ""}>
+                  {offer.scale_status}
+                </span>
               </div>
-              <Progress value={progressValue} className="h-2" />
+              <Progress
+                value={progressValue}
+                className={`h-2 ${isOnFire ? "progress-fire" : ""}`}
+              />
             </div>
           )}
         </div>
