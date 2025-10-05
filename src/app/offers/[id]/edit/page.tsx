@@ -3,17 +3,14 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { OfferForm } from "@/components/offers/offer-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import type { Offer } from "@/components/offers/offer-card";
 import { toast } from "sonner";
 
 export default function EditOfferPage() {
-  const [user, setUser] = useState<User | null>(null);
   const [offer, setOffer] = useState<Offer | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -22,17 +19,7 @@ export default function EditOfferPage() {
   const offerId = params.id as string;
 
   useEffect(() => {
-    const getData = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        router.push("/login");
-        return;
-      }
-      setUser(user);
-
+    const getOffer = async () => {
       const { data, error } = await supabase
         .from("offers")
         .select("*")
@@ -50,7 +37,9 @@ export default function EditOfferPage() {
       setLoading(false);
     };
 
-    getData();
+    if (offerId) {
+      getOffer();
+    }
   }, [supabase, router, offerId]);
 
   if (loading) {

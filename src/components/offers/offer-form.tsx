@@ -76,18 +76,13 @@ export function OfferForm({ initialData }: OfferFormProps) {
     );
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado.");
-
       let imageUrl = initialData?.image_url;
       const imageFile = values.image?.[0];
 
       if (imageFile) {
         const fileExt = imageFile.name.split(".").pop();
         const fileName = `${uuidv4()}.${fileExt}`;
-        const filePath = `${user.id}/${fileName}`;
+        const filePath = fileName; // No user folder needed
 
         const { error: uploadError } = await supabase.storage
           .from("offer_images")
@@ -106,7 +101,6 @@ export function OfferForm({ initialData }: OfferFormProps) {
       const { image, ...offerData } = values;
       const dataToUpsert = {
         ...offerData,
-        user_id: user.id,
         image_url: imageUrl,
       };
 
