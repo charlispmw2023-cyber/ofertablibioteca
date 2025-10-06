@@ -45,7 +45,7 @@ export function ThemeToggle() {
       aria-label="Toggle theme"
     >
       <DotLottiePlayer
-        src="https://lottie.host/249998dc-c39b-4e2b-b7b6-9b44857a6a2d/33za2kF72E.lottie"
+        src="https://lottie.host/5470518d-6b17-4230-a015-401929582293/FpI52v2C1L.lottie"
         autoplay={false}
         loop={false}
         lottieRef={(instance: any) => {
