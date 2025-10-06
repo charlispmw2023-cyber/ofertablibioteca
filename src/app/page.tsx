@@ -156,7 +156,7 @@ export default function Home() {
           </div>
         </div>
       </header>
-      <main className="container mx-auto p-4 sm-p-6">
+      <main className="container mx-auto p-4 sm:p-6">
         <div className="mb-6 flex flex-col gap-4">
           <div className="flex flex-col gap-4 sm:flex-row">
             <Input
