@@ -43,33 +43,21 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    const checkUserAndSubscribe = async () => {
-      // Verifica a sessão ativa no carregamento inicial
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.push('/login');
-        return;
-      }
-
-      setUser(session.user);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
       setIsCheckingAuth(false);
+    });
 
-      // Ouve por mudanças na autenticação (ex: logout)
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        (_event, session) => {
-          if (!session) {
-            router.push('/login');
-          }
-        }
-      );
+    return () => subscription.unsubscribe();
+  }, [supabase]);
 
-      return () => {
-        subscription.unsubscribe();
-      };
-    };
-
-    checkUserAndSubscribe();
-  }, [supabase, router]);
+  useEffect(() => {
+    if (!isCheckingAuth && !user) {
+      router.push("/login");
+    }
+  }, [isCheckingAuth, user, router]);
 
   useEffect(() => {
     if (!user) return;
@@ -114,7 +102,6 @@ export default function Home() {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     router.push("/login");
-    router.refresh();
   };
 
   const uniqueNiches = [
@@ -152,6 +139,10 @@ export default function Home() {
 
   if (isCheckingAuth) {
     return <div className="flex min-h-screen items-center justify-center"><p>Verificando autenticação...</p></div>;
+  }
+
+  if (!user) {
+    return null;
   }
 
   return (

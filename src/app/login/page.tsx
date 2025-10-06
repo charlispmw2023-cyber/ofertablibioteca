@@ -42,15 +42,16 @@ export default function LoginPage() {
     },
   });
 
-  // Redireciona se o usuário já estiver logado
   useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        router.push('/');
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN") {
+        router.push("/");
       }
-    };
-    checkSession();
+    });
+
+    return () => subscription.unsubscribe();
   }, [supabase, router]);
 
   const onSubmit = async (values: LoginFormValues) => {
@@ -61,13 +62,12 @@ export default function LoginPage() {
     });
 
     if (error) {
-      toast.error(error.message || "Falha ao fazer login. Verifique suas credenciais.");
+      toast.error(
+        error.message || "Falha ao fazer login. Verifique suas credenciais."
+      );
       setIsSubmitting(false);
-    } else {
-      // No sucesso, o Supabase client lida com a sessão.
-      // Redireciona para o dashboard.
-      router.push('/');
     }
+    // On success, the onAuthStateChange listener will handle the redirect.
   };
 
   return (
