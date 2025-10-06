@@ -29,8 +29,8 @@ const OFFERS_PER_PAGE = 12;
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [offers, setOffers] = useState<Offer[]>([]);
-  const [isFetching, setIsFetching] = useState(true);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [isFetchingOffers, setIsFetchingOffers] = useState(true);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [platformFilter, setPlatformFilter] = useState("all");
   const [nicheFilter, setNicheFilter] = useState("all");
@@ -43,22 +43,25 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setUser(session.user);
-      } else {
-        router.push("/login");
-      }
-    };
-    checkUser();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      setIsCheckingAuth(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, [supabase, router]);
+
+  useEffect(() => {
+    if (!isCheckingAuth && !user) {
+      router.push("/login");
+    }
+  }, [isCheckingAuth, user, router]);
 
   useEffect(() => {
     if (!user) return;
 
     const getOffers = async () => {
-      setIsFetching(true);
+      setIsFetchingOffers(true);
       
       let query = supabase.from("offers").select("*", { count: "exact" });
 
@@ -88,14 +91,11 @@ export default function Home() {
         setOffers(offersData || []);
         setTotalOffers(count || 0);
       }
-      setIsFetching(false);
-      if (isInitialLoad) {
-        setIsInitialLoad(false);
-      }
+      setIsFetchingOffers(false);
     };
 
     getOffers();
-  }, [currentPage, searchTerm, platformFilter, nicheFilter, scaleFilter, sortOption, user]);
+  }, [currentPage, searchTerm, platformFilter, nicheFilter, scaleFilter, sortOption, user, supabase]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -136,8 +136,12 @@ export default function Home() {
 
   const totalPages = Math.ceil(totalOffers / OFFERS_PER_PAGE);
 
-  if (!user || (isInitialLoad && isFetching)) {
+  if (isCheckingAuth) {
     return <div className="flex min-h-screen items-center justify-center"><p>Carregando...</p></div>;
+  }
+
+  if (!user) {
+    return null; // Renderiza nada enquanto o redirecionamento acontece
   }
 
   return (
@@ -250,7 +254,7 @@ export default function Home() {
           </div>
         </div>
         
-        {isInitialLoad ? (
+        {isFetchingOffers ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {[...Array(OFFERS_PER_PAGE)].map((_, i) => (
               <div key={i} className="flex flex-col space-y-3">
@@ -269,7 +273,7 @@ export default function Home() {
             </p>
           </div>
         ) : (
-          <div className={`grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 transition-opacity duration-200 ${isFetching ? 'opacity-50' : 'opacity-100'}`}>
+          <div className={`grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 transition-opacity duration-200 ${isFetchingOffers ? 'opacity-50' : 'opacity-100'}`}>
             {sortedOffers.map((offer) => (
               <OfferCard key={offer.id} offer={offer} />
             ))}
