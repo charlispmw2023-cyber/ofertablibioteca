@@ -19,25 +19,41 @@ export default function BoardPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const checkUserAndFetchData = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setUser(session.user);
-        const { data, error } = await supabase.from("offers").select("*");
-        if (error) {
-          console.error("Error fetching offers for board:", error);
-        } else {
-          setOffers(data || []);
-        }
-      } else {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      if (!session) {
         router.push("/login");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase, router]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const getOffers = async () => {
+      setLoading(true);
+      const { data, error } = await supabase.from("offers").select("*");
+      if (error) {
+        console.error("Error fetching offers for board:", error);
+      } else {
+        setOffers(data || []);
       }
       setLoading(false);
     };
-    checkUserAndFetchData();
-  }, [supabase, router]);
+    getOffers();
+  }, [user, supabase]);
 
-  if (loading || !user) {
+  if (!user) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <p>Verificando autenticação...</p>
+      </div>
+    );
+  }
+
+  if (loading) {
     return (
       <div className="flex h-screen flex-col">
         <header className="flex h-16 shrink-0 items-center justify-between border-b px-4">
