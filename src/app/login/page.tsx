@@ -119,9 +119,15 @@ export default function LoginPage() {
                         disabled={isSubmitting}
                       >
                         {showPassword ? (
-                          <EyeOff className="h-4 w-4" />
+                          <span className="flex items-center">
+                            <EyeOff className="h-4 w-4" />
+                            <EyeOff className="h-4 w-4 -ml-2.5" />
+                          </span>
                         ) : (
-                          <Eye className="h-4 w-4" />
+                          <span className="flex items-center">
+                            <Eye className="h-4 w-4" />
+                            <Eye className="h-4 w-4 -ml-2.5" />
+                          </span>
                         )}
                         <span className="sr-only">
                           {showPassword ? "Ocultar senha" : "Mostrar senha"}
