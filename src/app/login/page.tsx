@@ -121,12 +121,12 @@ export default function LoginPage() {
                         {showPassword ? (
                           <span className="flex items-center">
                             <EyeOff className="h-4 w-4" />
-                            <EyeOff className="h-4 w-4 -ml-1.5" />
+                            <EyeOff className="h-4 w-4 -ml-1" />
                           </span>
                         ) : (
                           <span className="flex items-center">
                             <Eye className="h-4 w-4" />
-                            <Eye className="h-4 w-4 -ml-1.5" />
+                            <Eye className="h-4 w-4 -ml-1" />
                           </span>
                         )}
                         <span className="sr-only">
