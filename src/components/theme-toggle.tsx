@@ -41,17 +41,19 @@ export function ThemeToggle() {
   return (
     <button
       onClick={handleToggle}
-      className="flex h-10 w-20 items-center justify-center rounded-full bg-transparent"
+      className="flex h-10 w-10 items-center justify-center rounded-md bg-transparent"
       aria-label="Toggle theme"
     >
-      <DotLottiePlayer
-        src="https://lottie.host/5470518d-6b17-4230-a015-401929582293/FpI52v2C1L.lottie"
-        autoplay={false}
-        loop={false}
-        lottieRef={(instance: any) => {
-          setLottiePlayer(instance);
-        }}
-      />
+      <div className="h-8 w-8">
+        <DotLottiePlayer
+          src="https://lottie.host/4aac5026-b969-4e69-9283-165506120080/asgITV9Yxm.lottie"
+          autoplay={false}
+          loop={false}
+          lottieRef={(instance: any) => {
+            setLottiePlayer(instance);
+          }}
+        />
+      </div>
     </button>
   );
 }
