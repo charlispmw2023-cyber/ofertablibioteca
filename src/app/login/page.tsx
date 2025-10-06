@@ -5,6 +5,7 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function LoginPage() {
   const supabase = createClientComponentClient();
@@ -24,7 +25,10 @@ export default function LoginPage() {
   }, [supabase, router]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
+    <div className="relative flex min-h-screen items-center justify-center bg-background">
+      <div className="absolute right-4 top-4">
+        <ThemeToggle />
+      </div>
       <div className="w-full max-w-md rounded-lg border bg-card p-8 text-card-foreground shadow-sm">
         <h1 className="mb-6 text-center text-2xl font-bold">
           Bem-vindo à sua Biblioteca de Ofertas
