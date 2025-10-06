@@ -46,7 +46,7 @@ export function ThemeToggle() {
     >
       <div className="h-8 w-8">
         <DotLottiePlayer
-          src="https://lottie.host/4aac5026-b969-4e69-9283-165506120080/asgITV9Yxm.lottie"
+          src="https://lottie.host/c2b54c9f-312b-421a-b689-38e4e011931e/33oD5iGa2d.lottie"
           autoplay={false}
           loop={false}
           lottieRef={(instance: any) => {
