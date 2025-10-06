@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { supabase } from "@/integrations/supabase/client";
 import Link from "next/link";
 import { LayoutGrid } from "lucide-react";
 import { KanbanBoard } from "@/components/kanban/kanban-board";
@@ -12,7 +12,6 @@ import { ThemeToggle } from "@/components/theme-toggle";
 export default function BoardPage() {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
-  const supabase = createClientComponentClient();
 
   useEffect(() => {
     const getOffers = async () => {
@@ -26,7 +25,7 @@ export default function BoardPage() {
       setLoading(false);
     };
     getOffers();
-  }, [supabase]);
+  }, []);
 
   if (loading) {
     return (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -35,7 +35,6 @@ export default function Home() {
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalOffers, setTotalOffers] = useState(0);
-  const supabase = createClientComponentClient();
 
   useEffect(() => {
     const getOffers = async () => {
@@ -73,7 +72,7 @@ export default function Home() {
     };
 
     getOffers();
-  }, [currentPage, searchTerm, platformFilter, nicheFilter, scaleFilter, sortOption, supabase]);
+  }, [currentPage, searchTerm, platformFilter, nicheFilter, scaleFilter, sortOption]);
 
   const uniqueNiches = [
     ...new Set(offers.map((offer) => offer.niche).filter(Boolean)),

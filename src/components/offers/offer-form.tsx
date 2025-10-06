@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { supabase } from "@/integrations/supabase/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -51,7 +51,6 @@ export function OfferForm({ initialData }: OfferFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [scrapedImageUrl, setScrapedImageUrl] = useState<string | null>(null);
   const router = useRouter();
-  const supabase = createClientComponentClient();
   const isEditMode = !!initialData;
 
   const form = useForm<OfferFormValues>({
