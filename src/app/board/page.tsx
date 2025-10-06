@@ -19,14 +19,31 @@ export default function BoardPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+    const checkUserAndSubscribe = async () => {
+      // Verifica a sessão ativa no carregamento inicial
+      const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        router.push("/login");
+        router.push('/login');
+        return;
       }
-    });
 
-    return () => subscription.unsubscribe();
+      setUser(session.user);
+
+      // Ouve por mudanças na autenticação (ex: logout)
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        (_event, session) => {
+          if (!session) {
+            router.push('/login');
+          }
+        }
+      );
+
+      return () => {
+        subscription.unsubscribe();
+      };
+    };
+
+    checkUserAndSubscribe();
   }, [supabase, router]);
 
   useEffect(() => {
