@@ -1,23 +1,59 @@
 "use client";
 
 import * as React from "react";
-import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
-
-import { Button } from "@/components/ui/button";
+import { DotLottiePlayer } from "@dotlottie/react-player";
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
+  const [lottiePlayer, setLottiePlayer] = React.useState<any | null>(
+    null
+  );
+
+  // Garante que a animação comece no estado correto (dia ou noite)
+  React.useEffect(() => {
+    if (lottiePlayer && lottiePlayer.totalFrames > 0) {
+      if (resolvedTheme === "dark") {
+        // Vai para o final da animação (noite) sem tocar
+        lottiePlayer.goToAndStop(lottiePlayer.totalFrames - 1, true);
+      } else {
+        // Vai para o início da animação (dia) sem tocar
+        lottiePlayer.goToAndStop(0, true);
+      }
+    }
+  }, [lottiePlayer, resolvedTheme]);
+
+  const handleToggle = () => {
+    if (!lottiePlayer) return;
+
+    const newTheme = resolvedTheme === "light" ? "dark" : "light";
+
+    if (newTheme === "dark") {
+      lottiePlayer.setDirection(1); // Toca a animação para frente (dia para noite)
+    } else {
+      lottiePlayer.setDirection(-1); // Toca a animação para trás (noite para dia)
+    }
+
+    lottiePlayer.play();
+    setTheme(newTheme);
+  };
 
   return (
-    <Button
-      variant="outline"
-      size="icon"
-      onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+    <button
+      onClick={handleToggle}
+      className="flex h-10 w-10 items-center justify-center rounded-md bg-transparent"
+      aria-label="Toggle theme"
     >
-      <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-      <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-      <span className="sr-only">Toggle theme</span>
-    </Button>
+      <div className="h-16 w-16">
+        <DotLottiePlayer
+          src="/theme-toggle-animation.json"
+          autoplay={false}
+          loop={false}
+          lottieRef={(instance: any) => {
+            setLottiePlayer(instance);
+          }}
+        />
+      </div>
+    </button>
   );
 }
