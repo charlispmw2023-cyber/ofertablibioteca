@@ -12,13 +12,13 @@ export function ThemeToggle() {
 
   // Garante que a animação comece no estado correto (dia ou noite)
   React.useEffect(() => {
-    if (lottiePlayer) {
+    if (lottiePlayer && lottiePlayer.totalFrames > 0) {
       if (resolvedTheme === "dark") {
         // Vai para o final da animação (noite) sem tocar
-        lottiePlayer.setFrame(lottiePlayer.totalFrames - 1);
+        lottiePlayer.goToAndStop(lottiePlayer.totalFrames - 1, true);
       } else {
         // Vai para o início da animação (dia) sem tocar
-        lottiePlayer.setFrame(0);
+        lottiePlayer.goToAndStop(0, true);
       }
     }
   }, [lottiePlayer, resolvedTheme]);
