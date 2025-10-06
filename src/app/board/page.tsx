@@ -2,43 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { useRouter } from "next/navigation";
-import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
-import { ArrowLeft, LayoutGrid } from "lucide-react";
+import { LayoutGrid } from "lucide-react";
 import { KanbanBoard } from "@/components/kanban/kanban-board";
 import type { Offer } from "@/components/offers/offer-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function BoardPage() {
-  const [user, setUser] = useState<User | null>(null);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const supabase = createClientComponentClient();
-  const router = useRouter();
 
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setIsCheckingAuth(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [supabase]);
-
-  useEffect(() => {
-    if (!isCheckingAuth && !user) {
-      router.push("/login");
-    }
-  }, [isCheckingAuth, user, router]);
-
-  useEffect(() => {
-    if (!user) return;
-
     const getOffers = async () => {
       setLoading(true);
       const { data, error } = await supabase.from("offers").select("*");
@@ -50,19 +26,7 @@ export default function BoardPage() {
       setLoading(false);
     };
     getOffers();
-  }, [user, supabase]);
-
-  if (isCheckingAuth) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <p>Verificando autenticação...</p>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
+  }, [supabase]);
 
   if (loading) {
     return (

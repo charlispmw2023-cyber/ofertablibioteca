@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { useRouter } from "next/navigation";
-import type { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -17,7 +15,7 @@ import Link from "next/link";
 import { OfferCard, type Offer } from "@/components/offers/offer-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Download, Upload, Kanban } from "lucide-react";
+import { Download, Upload, Kanban, BarChart as BarChartIcon } from "lucide-react";
 import { exportToCsv } from "@/lib/csv-export";
 import { toast } from "sonner";
 import { ImportOffersDialog } from "@/components/offers/import-offers-dialog";
@@ -27,10 +25,8 @@ type SortOption = "created_at" | "profit" | "roi" | "name";
 const OFFERS_PER_PAGE = 12;
 
 export default function Home() {
-  const [user, setUser] = useState<User | null>(null);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [isFetchingOffers, setIsFetchingOffers] = useState(true);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [platformFilter, setPlatformFilter] = useState("all");
   const [nicheFilter, setNicheFilter] = useState("all");
@@ -40,28 +36,8 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalOffers, setTotalOffers] = useState(0);
   const supabase = createClientComponentClient();
-  const router = useRouter();
 
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setIsCheckingAuth(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [supabase]);
-
-  useEffect(() => {
-    if (!isCheckingAuth && !user) {
-      router.push("/login");
-    }
-  }, [isCheckingAuth, user, router]);
-
-  useEffect(() => {
-    if (!user) return;
-
     const getOffers = async () => {
       setIsFetchingOffers(true);
       
@@ -97,12 +73,7 @@ export default function Home() {
     };
 
     getOffers();
-  }, [currentPage, searchTerm, platformFilter, nicheFilter, scaleFilter, sortOption, user, supabase]);
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.push("/login");
-  };
+  }, [currentPage, searchTerm, platformFilter, nicheFilter, scaleFilter, sortOption, supabase]);
 
   const uniqueNiches = [
     ...new Set(offers.map((offer) => offer.niche).filter(Boolean)),
@@ -137,14 +108,6 @@ export default function Home() {
 
   const totalPages = Math.ceil(totalOffers / OFFERS_PER_PAGE);
 
-  if (isCheckingAuth) {
-    return <div className="flex min-h-screen items-center justify-center"><p>Verificando autenticação...</p></div>;
-  }
-
-  if (!user) {
-    return null;
-  }
-
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-10 border-b bg-card/95 backdrop-blur-sm">
@@ -156,7 +119,11 @@ export default function Home() {
                 <Kanban className="h-4 w-4" />
               </Button>
             </Link>
-            <Button variant="outline" onClick={handleSignOut}>Sair</Button>
+            <Link href="/analytics" passHref>
+              <Button variant="outline" size="icon" aria-label="Análises">
+                <BarChartIcon className="h-4 w-4" />
+              </Button>
+            </Link>
             <ThemeToggle />
           </div>
         </div>
