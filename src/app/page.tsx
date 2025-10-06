@@ -29,7 +29,8 @@ const OFFERS_PER_PAGE = 12;
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [offers, setOffers] = useState<Offer[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [platformFilter, setPlatformFilter] = useState("all");
   const [nicheFilter, setNicheFilter] = useState("all");
@@ -57,7 +58,7 @@ export default function Home() {
     if (!user) return;
 
     const getOffers = async () => {
-      setLoading(true);
+      setIsFetching(true);
       
       let query = supabase.from("offers").select("*", { count: "exact" });
 
@@ -87,11 +88,14 @@ export default function Home() {
         setOffers(offersData || []);
         setTotalOffers(count || 0);
       }
-      setLoading(false);
+      setIsFetching(false);
+      if (isInitialLoad) {
+        setIsInitialLoad(false);
+      }
     };
 
     getOffers();
-  }, [currentPage, searchTerm, platformFilter, nicheFilter, scaleFilter, sortOption, user]);
+  }, [currentPage, searchTerm, platformFilter, nicheFilter, scaleFilter, sortOption, user, isInitialLoad]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -245,7 +249,8 @@ export default function Home() {
             </Select>
           </div>
         </div>
-        {loading ? (
+        
+        {isInitialLoad ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {[...Array(OFFERS_PER_PAGE)].map((_, i) => (
               <div key={i} className="flex flex-col space-y-3">
@@ -264,12 +269,13 @@ export default function Home() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className={`grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 transition-opacity duration-200 ${isFetching ? 'opacity-50' : 'opacity-100'}`}>
             {sortedOffers.map((offer) => (
               <OfferCard key={offer.id} offer={offer} />
             ))}
           </div>
         )}
+
         {totalPages > 1 && (
           <Pagination className="mt-8">
             <PaginationContent>
