@@ -95,7 +95,7 @@ export default function Home() {
     };
 
     getOffers();
-  }, [currentPage, searchTerm, platformFilter, nicheFilter, scaleFilter, sortOption, user, isInitialLoad]);
+  }, [currentPage, searchTerm, platformFilter, nicheFilter, scaleFilter, sortOption, user]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -136,7 +136,7 @@ export default function Home() {
 
   const totalPages = Math.ceil(totalOffers / OFFERS_PER_PAGE);
 
-  if (!user) {
+  if (!user || (isInitialLoad && isFetching)) {
     return <div className="flex min-h-screen items-center justify-center"><p>Carregando...</p></div>;
   }
 
@@ -156,7 +156,7 @@ export default function Home() {
           </div>
         </div>
       </header>
-      <main className="container mx-auto p-4 sm:p-6">
+      <main className="container mx-auto p-4 sm-p-6">
         <div className="mb-6 flex flex-col gap-4">
           <div className="flex flex-col gap-4 sm:flex-row">
             <Input
