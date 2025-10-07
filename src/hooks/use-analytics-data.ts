@@ -42,17 +42,17 @@ export const useAnalyticsData = (
         return offerDate >= startOfDay(fromDate) && offerDate <= startOfDay(toDate);
       });
 
-    let currentOffers = filterOffersByDate(allOffers, from, to);
-    const previousOffers = filterOffersByDate(allOffers, prevFrom, prevTo);
+    const fullPeriodOffers = filterOffersByDate(allOffers, from, to);
+    const previousPeriodOffers = filterOffersByDate(allOffers, prevFrom, prevTo);
 
-    // Apply interactive filters
+    let filteredOffers = [...fullPeriodOffers];
     if (selectedPlatform) {
-      currentOffers = currentOffers.filter(
+      filteredOffers = filteredOffers.filter(
         (o) => o.platform === selectedPlatform
       );
     }
     if (selectedNiche) {
-      currentOffers = currentOffers.filter((o) => o.niche === selectedNiche);
+      filteredOffers = filteredOffers.filter((o) => o.niche === selectedNiche);
     }
 
     const calculateMetrics = (offers: Offer[]) => {
@@ -63,8 +63,8 @@ export const useAnalyticsData = (
       return { revenue, cost, profit, roi };
     };
 
-    const currentMetrics = calculateMetrics(currentOffers);
-    const previousMetrics = calculateMetrics(previousOffers);
+    const currentMetrics = calculateMetrics(filteredOffers);
+    const previousMetrics = calculateMetrics(previousPeriodOffers);
 
     const trendValues = {
       revenue: calculatePercentageChange(
@@ -90,7 +90,7 @@ export const useAnalyticsData = (
       Custo: 0,
     }));
 
-    currentOffers.forEach((offer) => {
+    filteredOffers.forEach((offer) => {
       const dateStr = format(new Date(offer.created_at), "dd/MM");
       const entry = performanceData.find((d) => d.date === dateStr);
       if (entry) {
@@ -100,12 +100,11 @@ export const useAnalyticsData = (
     });
 
     const processGroupedData = (
-      offers: Offer[],
+      offersToProcess: Offer[],
       key: keyof Offer,
       aggregator: (acc: number, offer: Offer) => number
     ) => {
-      const fullPeriodOffers = filterOffersByDate(allOffers, from, to);
-      const grouped = fullPeriodOffers.reduce((acc, offer) => {
+      const grouped = offersToProcess.reduce((acc, offer) => {
         const groupKey = (offer[key] as string) || "N/A";
         acc[groupKey] = aggregator(acc[groupKey] || 0, offer);
         return acc;
@@ -123,17 +122,17 @@ export const useAnalyticsData = (
       trends: trendValues,
       performanceOverTimeData: performanceData.reverse(),
       profitByPlatformData: processGroupedData(
-        currentOffers,
+        selectedNiche ? filteredOffers : fullPeriodOffers,
         "platform",
         profitAggregator
       ).map((d) => ({ platform: d.name, profit: d.value })),
       offersByNicheData: processGroupedData(
-        currentOffers,
+        selectedPlatform ? filteredOffers : fullPeriodOffers,
         "niche",
         (acc) => acc + 1
       ),
       profitByNicheData: processGroupedData(
-        currentOffers,
+        filteredOffers,
         "niche",
         profitAggregator
       ).map((d) => ({ niche: d.name, profit: d.value })),
