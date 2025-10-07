@@ -1,15 +1,23 @@
-"use client";
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { LucideIcon } from "lucide-react";
+import { TrendIndicator } from "./trend-indicator";
 
 interface SummaryCardProps {
   title: string;
   value: string;
-  icon: LucideIcon;
+  icon: React.ElementType;
+  trend?: number;
+  trendLabel?: string;
+  invertTrendColor?: boolean;
 }
 
-export function SummaryCard({ title, value, icon: Icon }: SummaryCardProps) {
+export function SummaryCard({
+  title,
+  value,
+  icon: Icon,
+  trend,
+  trendLabel,
+  invertTrendColor = false,
+}: SummaryCardProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -18,6 +26,13 @@ export function SummaryCard({ title, value, icon: Icon }: SummaryCardProps) {
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>
+        {trend !== undefined && trendLabel && (
+          <TrendIndicator
+            value={trend}
+            label={trendLabel}
+            invertColor={invertTrendColor}
+          />
+        )}
       </CardContent>
     </Card>
   );
