@@ -50,8 +50,16 @@ export function AiMentorChat() {
         body: JSON.stringify({ history: newMessages }),
       });
 
-      if (!response.ok || !response.body) {
-        throw new Error(`Erro na API: ${response.statusText}`);
+      if (!response.ok) {
+        // --- INÍCIO DA MUDANÇA ---
+        // Captura e exibe a mensagem de erro detalhada do servidor
+        const errorText = await response.text();
+        throw new Error(`Erro da API: ${errorText}`);
+        // --- FIM DA MUDANÇA ---
+      }
+      
+      if (!response.body) {
+        throw new Error("A resposta não contém um corpo.");
       }
 
       const reader = response.body.getReader();
@@ -72,9 +80,10 @@ export function AiMentorChat() {
         });
       }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao buscar resposta da IA:", error);
-      setMessages(prev => [...prev, { text: "Desculpe, ocorreu um erro. Verifique sua chave de API e tente novamente.", sender: "ai" }]);
+      // Exibe a mensagem de erro detalhada no chat
+      setMessages(prev => [...prev, { text: error.message, sender: "ai" }]);
     } finally {
       setIsLoading(false);
     }
