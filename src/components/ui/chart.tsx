@@ -2,7 +2,10 @@
 
 import * as React from "react";
 import * as RechartsPrimitive from "recharts";
-import { LegendPayload, TooltipProps as RechartsTooltipProps, LegendProps as RechartsLegendProps } from "recharts"; // Corrigido: importando LegendProps em vez de Props
+import {
+  TooltipProps as RechartsTooltipProps,
+  LegendProps as RechartsLegendProps,
+} from "recharts";
 
 import { cn } from "@/lib/utils";
 
@@ -83,7 +86,7 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
 
 // region ChartTooltip
 
-type ChartTooltipProps = Omit<React.ComponentPropsWithoutRef<typeof RechartsPrimitive.Tooltip>, 'content'> &
+type ChartTooltipContentProps = RechartsTooltipProps<any, any> &
   React.ComponentPropsWithoutRef<"div"> & {
     hideIndicator?: boolean;
     hideLabel?: boolean;
@@ -97,12 +100,11 @@ type ChartTooltipProps = Omit<React.ComponentPropsWithoutRef<typeof RechartsPrim
     labelKey?: string;
     indicator?: "dot" | "line";
     color?: string;
-    content?: RechartsTooltipProps<any, any>['content']; // Usando o tipo de conteúdo do Recharts
   };
 
-const ChartTooltip = React.forwardRef<
+const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
-  ChartTooltipProps
+  ChartTooltipContentProps
 >(
   (
     {
@@ -114,12 +116,8 @@ const ChartTooltip = React.forwardRef<
       hideLabel = false,
       label,
       labelFormatter,
-      labelClassName,
       formatter,
-      color,
       nameKey,
-      labelKey,
-      content: Content, // Renomeando content para Content para evitar conflito
       ...props
     },
     ref
@@ -143,23 +141,6 @@ const ChartTooltip = React.forwardRef<
     }, [label, labelFormatter, payload, hideLabel, config]);
 
     if (active && payload?.length) {
-      // Se um componente de conteúdo foi fornecido, renderize-o
-      if (Content) {
-        return React.createElement(Content, {
-          active,
-          payload,
-          label,
-          labelFormatter,
-          formatter,
-          color,
-          nameKey,
-          labelKey,
-          ...props,
-          ref,
-        });
-      }
-
-      // Caso contrário, renderize o conteúdo padrão
       return (
         <div
           ref={ref}
@@ -171,10 +152,11 @@ const ChartTooltip = React.forwardRef<
         >
           {!hideLabel ? tooltipLabel : null}
           <div className="grid gap-1.5">
-            {payload.map((item: any, index: number) => {
+            {payload.map((item: any) => {
               const key = `${nameKey || item.name || item.dataKey || "value"}`;
               const itemConfig = config[key];
-              const indicatorColor = itemConfig?.color || item.fill || item.stroke || item.color;
+              const indicatorColor =
+                itemConfig?.color || item.fill || item.stroke || item.color;
 
               return (
                 <div
@@ -228,35 +210,50 @@ const ChartTooltip = React.forwardRef<
     return null;
   }
 );
-ChartTooltip.displayName = "ChartTooltip";
-
-const ChartTooltipContent = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentPropsWithoutRef<typeof ChartTooltip>
->((props, ref) => {
-  return <ChartTooltip {...props} ref={ref} />;
-});
 ChartTooltipContent.displayName = "ChartTooltipContent";
+
+const ChartTooltip = React.forwardRef<
+  RechartsPrimitive.Tooltip<any, any>,
+  React.ComponentProps<typeof RechartsPrimitive.Tooltip>
+>((props, ref) => (
+  <RechartsPrimitive.Tooltip
+    ref={ref}
+    cursor={false}
+    {...props}
+    content={props.content || <ChartTooltipContent />}
+  />
+));
+ChartTooltip.displayName = "ChartTooltip";
 
 // endregion
 
 // region ChartLegend
 
-type ChartLegendProps = Omit<React.ComponentPropsWithoutRef<typeof RechartsPrimitive.Legend>, 'content'> &
+type ChartLegendContentProps = RechartsLegendProps &
   React.ComponentPropsWithoutRef<"div"> & {
     hideIcon?: boolean;
     formatter?: (
       value: string | number,
-      entry: LegendPayload, // Usando o tipo LegendPayload importado
+      entry: NonNullable<RechartsPrimitive.LegendProps["payload"]>[number],
       index: number
     ) => React.ReactNode;
     nameKey?: string;
-    content?: RechartsLegendProps['content']; // Usando o tipo de conteúdo do Recharts
   };
 
-const ChartLegend = React.forwardRef<HTMLDivElement, ChartLegendProps>(
+const ChartLegendContent = React.forwardRef<
+  HTMLDivElement,
+  ChartLegendContentProps
+>(
   (
-    { className, hideIcon = false, payload, verticalAlign = "bottom", nameKey, formatter, content: Content, ...props },
+    {
+      className,
+      hideIcon = false,
+      payload,
+      verticalAlign = "bottom",
+      nameKey,
+      formatter,
+      ...props
+    },
     ref
   ) => {
     const { config } = React.useContext(ChartContext);
@@ -265,19 +262,6 @@ const ChartLegend = React.forwardRef<HTMLDivElement, ChartLegendProps>(
       return null;
     }
 
-    // Se um componente de conteúdo foi fornecido, renderize-o
-    if (Content) {
-      return React.createElement(Content, {
-        payload,
-        verticalAlign,
-        nameKey,
-        formatter,
-        ...props,
-        ref,
-      });
-    }
-
-    // Caso contrário, renderize o conteúdo padrão
     return (
       <div
         ref={ref}
@@ -289,59 +273,68 @@ const ChartLegend = React.forwardRef<HTMLDivElement, ChartLegendProps>(
         )}
         {...props}
       >
-        {payload.map((item: LegendPayload, index: number) => { // Usando LegendPayload importado
-          const key = `${nameKey || item.dataKey || "value"}`;
-          const itemConfig = config[key];
-          const indicatorColor = itemConfig?.color || item.fill || item.stroke || item.color;
+        {payload.map(
+          (
+            item: NonNullable<RechartsPrimitive.LegendProps["payload"]>[number],
+            index: number
+          ) => {
+            const key = `${nameKey || item.dataKey || "value"}`;
+            const itemConfig = config[key];
+            const indicatorColor =
+              itemConfig?.color || item.fill || item.stroke || item.color;
 
-          return (
-            <div
-              key={item.value}
-              className={cn(
-                "flex items-center gap-1.5",
-                `recharts-legend-item-${item.chartId}-${key}`
-              )}
-            >
-              {!hideIcon && (
-                item.payload?.strokeDasharray ? (
-                  <div
-                    className="h-0.5 w-3 shrink-0 rounded-full"
-                    style={{
-                      backgroundColor: indicatorColor,
-                    }}
-                  />
+            return (
+              <div
+                key={item.value}
+                className={cn(
+                  "flex items-center gap-1.5",
+                  `recharts-legend-item-${item.chartId}-${key}`
+                )}
+              >
+                {!hideIcon &&
+                  (item.payload?.strokeDasharray ? (
+                    <div
+                      className="h-0.5 w-3 shrink-0 rounded-full"
+                      style={{
+                        backgroundColor: indicatorColor,
+                      }}
+                    />
+                  ) : (
+                    <div
+                      className="h-2 w-2 shrink-0 rounded-full"
+                      style={{
+                        backgroundColor: indicatorColor,
+                      }}
+                    />
+                  ))}
+                {formatter ? (
+                  formatter(item.value as string | number, item, index)
                 ) : (
-                  <div
-                    className="h-2 w-2 shrink-0 rounded-full"
-                    style={{
-                      backgroundColor: indicatorColor,
-                    }}
-                  />
-                )
-              )}
-              {formatter ? (
-                formatter(item.value as string | number, item, index)
-              ) : (
-                <span className="text-sm text-muted-foreground">
-                  {itemConfig?.label || item.name}
-                </span>
-              )}
-            </div>
-          );
-        })}
+                  <span className="text-sm text-muted-foreground">
+                    {itemConfig?.label || item.name}
+                  </span>
+                )}
+              </div>
+            );
+          }
+        )}
       </div>
     );
   }
 );
-ChartLegend.displayName = "ChartLegend";
-
-const ChartLegendContent = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentPropsWithoutRef<typeof ChartLegend>
->((props, ref) => {
-  return <ChartLegend {...props} ref={ref} />;
-});
 ChartLegendContent.displayName = "ChartLegendContent";
+
+const ChartLegend = React.forwardRef<
+  RechartsPrimitive.Legend,
+  React.ComponentProps<typeof RechartsPrimitive.Legend>
+>((props, ref) => (
+  <RechartsPrimitive.Legend
+    ref={ref}
+    {...props}
+    content={props.content || <ChartLegendContent />}
+  />
+));
+ChartLegend.displayName = "ChartLegend";
 
 // endregion
 

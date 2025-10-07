@@ -17,8 +17,7 @@ import {
   ResponsiveContainer,
   XAxis,
   YAxis,
-  Cell as RechartsPrimitiveCell, // Importando Cell com alias
-  LegendPayload, // Importando LegendPayload diretamente
+  Cell as RechartsPrimitiveCell,
 } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import type { Offer } from "@/components/offers/offer-card";
@@ -221,7 +220,7 @@ export default function AnalyticsPage() {
                       axisLine={false}
                       tickFormatter={(value: number) => `${formatCurrency(value)}`}
                     />
-                    <ChartTooltip content={ChartTooltipContent} />
+                    <ChartTooltip />
                     <Bar
                       dataKey="profit"
                       fill="hsl(var(--primary))"
@@ -270,7 +269,7 @@ export default function AnalyticsPage() {
                       axisLine={false}
                       tickFormatter={(value: number) => `${formatCurrency(value)}`}
                     />
-                    <ChartTooltip content={ChartTooltipContent} />
+                    <ChartTooltip />
                     <Bar
                       dataKey="profit"
                       fill="hsl(var(--primary))"
@@ -289,7 +288,9 @@ export default function AnalyticsPage() {
               <ChartContainer config={nicheChartConfig} className="h-[300px] w-full">
                 <ResponsiveContainer>
                   <PieChart>
-                    <ChartTooltip content={ChartTooltipContent} nameKey="name" />
+                    <ChartTooltip
+                      content={<ChartTooltipContent nameKey="name" />}
+                    />
                     <Pie
                       data={offersByNicheData}
                       dataKey="value"
@@ -309,8 +310,7 @@ export default function AnalyticsPage() {
                       ))}
                     </Pie>
                     <ChartLegend
-                      content={ChartLegendContent}
-                      nameKey="name"
+                      content={<ChartLegendContent nameKey="name" />}
                     />
                   </PieChart>
                 </ResponsiveContainer>
