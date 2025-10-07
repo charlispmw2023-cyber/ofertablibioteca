@@ -78,6 +78,60 @@ export function LinksSection({ control }: LinksSectionProps) {
           )}
         />
       </div>
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-4"> {/* Novo grid para os upsells adicionais */}
+        <FormField
+          control={control}
+          name="upsell_4_link"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Upsell 4</FormLabel>
+              <FormControl>
+                <Input placeholder="https://..." {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={control}
+          name="upsell_5_link"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Upsell 5</FormLabel>
+              <FormControl>
+                <Input placeholder="https://..." {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={control}
+          name="upsell_6_link"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Upsell 6</FormLabel>
+              <FormControl>
+                <Input placeholder="https://..." {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={control}
+          name="upsell_7_link"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Upsell 7</FormLabel>
+              <FormControl>
+                <Input placeholder="https://..." {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
       <FormField
         control={control}
         name="thank_you_page_link"

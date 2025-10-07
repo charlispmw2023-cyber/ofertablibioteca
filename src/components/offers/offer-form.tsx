@@ -33,13 +33,17 @@ const offerFormSchema = z.object({
   upsell_1_link: z.string().url().optional().or(z.literal("")),
   upsell_2_link: z.string().url().optional().or(z.literal("")),
   upsell_3_link: z.string().url().optional().or(z.literal("")),
+  upsell_4_link: z.string().url().optional().or(z.literal("")), // Novo campo
+  upsell_5_link: z.string().url().optional().or(z.literal("")), // Novo campo
+  upsell_6_link: z.string().url().optional().or(z.literal("")), // Novo campo
+  upsell_7_link: z.string().url().optional().or(z.literal("")), // Novo campo
   thank_you_page_link: z.string().url().optional().or(z.literal("")),
   platform: z.string().min(1, { message: "Selecione uma plataforma." }),
   niche: z.string().optional(),
   cost: z.coerce.number().optional(),
   revenue: z.coerce.number().optional(),
   drive_link: z.string().url().optional().or(z.literal("")),
-  ad_library_link: z.string().url().optional().or(z.literal("")), // Novo campo
+  ad_library_link: z.string().url().optional().or(z.literal("")),
 });
 
 type OfferFormValues = z.infer<typeof offerFormSchema>;
@@ -68,13 +72,17 @@ export function OfferForm({ initialData }: OfferFormProps) {
       upsell_1_link: initialData?.upsell_1_link ?? "",
       upsell_2_link: initialData?.upsell_2_link ?? "",
       upsell_3_link: initialData?.upsell_3_link ?? "",
+      upsell_4_link: initialData?.upsell_4_link ?? "", // Novo campo
+      upsell_5_link: initialData?.upsell_5_link ?? "", // Novo campo
+      upsell_6_link: initialData?.upsell_6_link ?? "", // Novo campo
+      upsell_7_link: initialData?.upsell_7_link ?? "", // Novo campo
       thank_you_page_link: initialData?.thank_you_page_link ?? "",
       platform: initialData?.platform ?? "",
       niche: initialData?.niche ?? "",
       cost: initialData?.cost ?? undefined,
       revenue: initialData?.revenue ?? undefined,
       drive_link: initialData?.drive_link ?? "",
-      ad_library_link: initialData?.ad_library_link ?? "", // Novo campo
+      ad_library_link: initialData?.ad_library_link ?? "",
     },
   });
 

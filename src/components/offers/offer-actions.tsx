@@ -32,9 +32,13 @@ export function OfferActions({ offer }: OfferActionsProps) {
     { label: "Upsell 1", href: offer.upsell_1_link },
     { label: "Upsell 2", href: offer.upsell_2_link },
     { label: "Upsell 3", href: offer.upsell_3_link },
+    { label: "Upsell 4", href: offer.upsell_4_link }, // Adicionado aqui
+    { label: "Upsell 5", href: offer.upsell_5_link }, // Adicionado aqui
+    { label: "Upsell 6", href: offer.upsell_6_link }, // Adicionado aqui
+    { label: "Upsell 7", href: offer.upsell_7_link }, // Adicionado aqui
     { label: "Página de Obrigado", href: offer.thank_you_page_link },
     { label: "Drive", href: offer.drive_link },
-    { label: "Biblioteca de Anúncios", href: offer.ad_library_link }, // Adicionado aqui
+    { label: "Biblioteca de Anúncios", href: offer.ad_library_link },
   ].filter((link) => link.href);
 
   const handleDelete = async () => {

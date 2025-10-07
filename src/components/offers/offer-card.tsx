@@ -24,7 +24,7 @@ import { ptBR } from "date-fns/locale";
 import { OfferActions } from "./offer-actions";
 import { NotebookText } from "lucide-react";
 import { FormattedText } from "@/components/common/formatted-text";
-import { OfferLinksDialog } from "./offer-links-dialog"; // Importando o novo componente
+import { OfferLinksDialog } from "./offer-links-dialog";
 
 export type Offer = {
   id: string;
@@ -43,9 +43,13 @@ export type Offer = {
   upsell_1_link?: string;
   upsell_2_link?: string;
   upsell_3_link?: string;
+  upsell_4_link?: string; // Novo campo
+  upsell_5_link?: string; // Novo campo
+  upsell_6_link?: string; // Novo campo
+  upsell_7_link?: string; // Novo campo
   thank_you_page_link?: string;
   drive_link?: string;
-  ad_library_link?: string; // Novo campo
+  ad_library_link?: string;
 };
 
 interface OfferCardProps {
