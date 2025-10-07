@@ -102,7 +102,7 @@ export function AiMentorChat() {
                 }`}
               >
                 <div
-                  className={`prose prose-sm max-w-xs lg:max-w-md rounded-lg px-4 py-2 ${
+                  className={`prose prose-sm max-w-2xl rounded-lg px-4 py-2 ${
                     msg.sender === "user"
                       ? "bg-primary text-primary-foreground prose-invert"
                       : "bg-muted"
