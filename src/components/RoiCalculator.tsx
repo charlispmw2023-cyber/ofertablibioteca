@@ -31,8 +31,8 @@ export function RoiCalculator() {
     }
 
     const profit = revenueValue - costValue;
-    // Corrigido: Usando a fórmula de ROAS (Receita / Custo) * 100
-    const roi = costValue > 0 ? (revenueValue / costValue) * 100 : 0;
+    // Corrigido: Usando a fórmula padrão de ROI: ((Receita - Custo) / Custo) * 100
+    const roi = costValue > 0 ? ((revenueValue - costValue) / costValue) * 100 : 0;
 
     setResults({ profit, roi });
   };
