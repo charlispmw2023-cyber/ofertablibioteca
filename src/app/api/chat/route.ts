@@ -35,7 +35,7 @@ export async function POST(req: Request) {
         "X-Title": SITE_NAME,
       },
       body: JSON.stringify({
-        model: "google/gemini-flash-1.5",
+        model: "mistralai/mistral-7b-instruct:free", // Modelo trocado para uma versão mais estável
         messages: messages,
         stream: true,
       }),
@@ -43,7 +43,7 @@ export async function POST(req: Request) {
 
     if (!response.ok) {
       const errorBody = await response.text();
-      console.error("Erro da API OpenRouter:", errorBody);
+      console.error("Erro da API OpenRouter:", `Status: ${response.status}`, errorBody);
       return new Response(`Erro do OpenRouter: ${errorBody}`, { status: response.status });
     }
 
