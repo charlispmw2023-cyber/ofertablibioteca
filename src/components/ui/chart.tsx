@@ -280,15 +280,19 @@ const ChartLegendContent = React.forwardRef<
           ) => {
             const key = `${nameKey || item.dataKey || "value"}`;
             const itemConfig = config[key];
+            const itemAsAny = item as any;
             const indicatorColor =
-              itemConfig?.color || item.fill || item.stroke || item.color;
+              itemConfig?.color ||
+              itemAsAny.color ||
+              itemAsAny.fill ||
+              itemAsAny.stroke;
 
             return (
               <div
                 key={item.value}
                 className={cn(
                   "flex items-center gap-1.5",
-                  `recharts-legend-item-${item.chartId}-${key}`
+                  `recharts-legend-item-${itemAsAny.chartId}-${key}`
                 )}
               >
                 {!hideIcon &&
@@ -311,7 +315,7 @@ const ChartLegendContent = React.forwardRef<
                   formatter(item.value as string | number, item, index)
                 ) : (
                   <span className="text-sm text-muted-foreground">
-                    {itemConfig?.label || item.name}
+                    {itemConfig?.label || item.value}
                   </span>
                 )}
               </div>
@@ -329,7 +333,7 @@ const ChartLegend = React.forwardRef<
   React.ComponentProps<typeof RechartsPrimitive.Legend>
 >((props, ref) => (
   <RechartsPrimitive.Legend
-    ref={ref}
+    ref={ref as any}
     {...props}
     content={props.content || <ChartLegendContent />}
   />
