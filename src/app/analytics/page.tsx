@@ -18,6 +18,7 @@ import {
   XAxis,
   YAxis,
   Cell as RechartsPrimitiveCell, // Importando Cell com alias
+  LegendPayload, // Importando LegendPayload diretamente
 } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import type { Offer } from "@/components/offers/offer-card";

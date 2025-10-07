@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import * as RechartsPrimitive from "recharts";
-import { LegendPayload, TooltipProps as RechartsTooltipProps, LegendProps as RechartsLegendProps } from "recharts"; // Corrigido: importando LegendProps em vez de Props
 
 import { cn } from "@/lib/utils";
 
@@ -83,7 +82,7 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
 
 // region ChartTooltip
 
-type ChartTooltipProps = Omit<React.ComponentPropsWithoutRef<typeof RechartsPrimitive.Tooltip>, 'content'> &
+type ChartTooltipProps = RechartsPrimitive.TooltipProps<any, any> &
   React.ComponentPropsWithoutRef<"div"> & {
     hideIndicator?: boolean;
     hideLabel?: boolean;
@@ -97,7 +96,6 @@ type ChartTooltipProps = Omit<React.ComponentPropsWithoutRef<typeof RechartsPrim
     labelKey?: string;
     indicator?: "dot" | "line";
     color?: string;
-    content?: RechartsTooltipProps<any, any>['content']; // Usando o tipo de conteúdo do Recharts
   };
 
 const ChartTooltip = React.forwardRef<
@@ -242,16 +240,15 @@ ChartTooltipContent.displayName = "ChartTooltipContent";
 
 // region ChartLegend
 
-type ChartLegendProps = Omit<React.ComponentPropsWithoutRef<typeof RechartsPrimitive.Legend>, 'content'> &
+type ChartLegendProps = RechartsPrimitive.LegendProps &
   React.ComponentPropsWithoutRef<"div"> & {
     hideIcon?: boolean;
     formatter?: (
       value: string | number,
-      entry: LegendPayload, // Usando o tipo LegendPayload importado
+      entry: RechartsPrimitive.LegendPayload, // Usando o tipo RechartsPrimitive.LegendPayload diretamente
       index: number
     ) => React.ReactNode;
     nameKey?: string;
-    content?: RechartsLegendProps['content']; // Usando o tipo de conteúdo do Recharts
   };
 
 const ChartLegend = React.forwardRef<HTMLDivElement, ChartLegendProps>(
@@ -289,7 +286,7 @@ const ChartLegend = React.forwardRef<HTMLDivElement, ChartLegendProps>(
         )}
         {...props}
       >
-        {payload.map((item: LegendPayload, index: number) => { // Usando LegendPayload importado
+        {payload.map((item: RechartsPrimitive.LegendPayload, index: number) => { // Usando RechartsPrimitive.LegendPayload diretamente
           const key = `${nameKey || item.dataKey || "value"}`;
           const itemConfig = config[key];
           const indicatorColor = itemConfig?.color || item.fill || item.stroke || item.color;
