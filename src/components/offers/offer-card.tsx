@@ -23,7 +23,8 @@ import { format, formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { OfferActions } from "./offer-actions";
 import { NotebookText } from "lucide-react";
-import { FormattedText } from "@/components/common/formatted-text"; // Importando o novo componente
+import { FormattedText } from "@/components/common/formatted-text";
+import { OfferLinksDialog } from "./offer-links-dialog"; // Importando o novo componente
 
 export type Offer = {
   id: string;
@@ -78,15 +79,20 @@ export function OfferCard({ offer }: OfferCardProps) {
   return (
     <Card className="flex flex-col overflow-hidden border-border">
       <CardHeader className="p-0">
-        <div className="relative h-40 w-full">
-          <Image
-            src={offer.image_url}
-            alt={offer.name}
-            layout="fill"
-            objectFit="cover"
-            className="transition-transform duration-300 hover:scale-105"
-          />
-        </div>
+        <Dialog>
+          <DialogTrigger asChild>
+            <div className="relative h-40 w-full cursor-pointer">
+              <Image
+                src={offer.image_url}
+                alt={offer.name}
+                layout="fill"
+                objectFit="cover"
+                className="transition-transform duration-300 hover:scale-105"
+              />
+            </div>
+          </DialogTrigger>
+          <OfferLinksDialog offer={offer} />
+        </Dialog>
       </CardHeader>
       <CardContent className="flex flex-grow flex-col p-4">
         <div className="flex-grow">
