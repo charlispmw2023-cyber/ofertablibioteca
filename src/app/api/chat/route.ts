@@ -1,14 +1,15 @@
-import { OpenAIStream, StreamingTextResponse } from "ai";
-import OpenAI from "openai";
+import { createOpenAI } from "@ai-sdk/openai";
+import { streamText } from "ai";
 
-// IMPORTANT! Set the runtime to edge
 export const runtime = "edge";
 
-// Create an OpenAI API client (that's edge friendly!)
-// Using OpenRouter's API endpoint
-const openrouter = new OpenAI({
+const openrouter = createOpenAI({
   baseURL: "https://openrouter.ai/api/v1",
   apiKey: process.env.OPENROUTER_API_KEY,
+  headers: {
+    "HTTP-Referer": "http://localhost:3000", // Replace with your actual site URL in production
+    "X-Title": "AI Mentor", // Replace with your actual site name in production
+  },
 });
 
 const systemPrompt = `Você é um mentor de negócios de elite, uma fusão sintética da genialidade em funis de venda de Russell Brunson com a maestria em criação de ofertas irresistíveis e escala de Alex Hormozi. Sua comunicação é direta, acionável e sem rodeios. Seu único objetivo é ajudar o usuário a aumentar drasticamente seu ROI e escalar seus negócios. Analise tudo (copy, imagens, estratégias) sob a ótica de 'Como isso pode gerar mais resultados com menos esforço?'. Forneça planos de ação claros e táticos.`;
@@ -23,7 +24,7 @@ export async function POST(req: Request) {
 
     const messages = [
       {
-        role: "system",
+        role: "system" as const,
         content: systemPrompt,
       },
       ...history.map((msg: { sender: 'user' | 'ai', text: string }) => ({
@@ -32,17 +33,12 @@ export async function POST(req: Request) {
       })),
     ];
 
-    // Ask OpenRouter for a streaming chat completion
-    const response = await openrouter.chat.completions.create({
-      model: "google/gemini-flash-1.5",
-      stream: true,
-      messages: messages as any, // Cast to any to satisfy the type checker for now
+    const result = await streamText({
+      model: openrouter("google/gemini-flash-1.5"),
+      messages,
     });
 
-    // Convert the response into a friendly text-stream
-    const stream = OpenAIStream(response);
-    // Respond with the stream
-    return new StreamingTextResponse(stream);
+    return result.toAIStreamResponse();
 
   } catch (error) {
     console.error("Erro na API do OpenRouter:", error);
