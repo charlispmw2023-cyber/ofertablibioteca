@@ -157,7 +157,7 @@ export default function AnalyticsPage() {
     value,
   }: any) => {
     const RADIAN = Math.PI / 180;
-    const radius = outerRadius + 25;
+    const radius = outerRadius + 15; // Reduced distance
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
     const textAnchor = x > cx ? "start" : "end";
@@ -173,9 +173,9 @@ export default function AnalyticsPage() {
         fill={resolvedTheme === "dark" ? "#f9fafb" : "#111827"}
         textAnchor={textAnchor}
         dominantBaseline="central"
-        className="text-sm font-medium"
+        className="text-xs"
       >
-        {`${name} (${value})`}
+        {`${truncateLabel(name, 12)} (${value})`}
       </text>
     );
   };
@@ -327,7 +327,7 @@ export default function AnalyticsPage() {
             <CardContent>
               <ChartContainer config={nicheChartConfig} className="h-[300px] w-full">
                 <ResponsiveContainer>
-                  <PieChart>
+                  <PieChart margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
                     <ChartTooltip
                       content={<ChartTooltipContent nameKey="name" />}
                     />
@@ -337,7 +337,7 @@ export default function AnalyticsPage() {
                       nameKey="name"
                       cx="50%"
                       cy="50%"
-                      outerRadius={80}
+                      outerRadius={60}
                       innerRadius={30}
                       label={renderCustomizedPieLabel}
                       labelLine={false}
