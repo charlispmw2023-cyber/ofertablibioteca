@@ -12,7 +12,6 @@ import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 import type { Offer } from "./offer-card";
 
-import { SpyToolSection } from "./form-sections/spy-tool-section";
 import { BasicInfoSection } from "./form-sections/basic-info-section";
 import { ScaleStatusSection } from "./form-sections/scale-status-section";
 import { FinancialsSection } from "./form-sections/financials-section";
@@ -33,10 +32,10 @@ const offerFormSchema = z.object({
   upsell_1_link: z.string().url().optional().or(z.literal("")),
   upsell_2_link: z.string().url().optional().or(z.literal("")),
   upsell_3_link: z.string().url().optional().or(z.literal("")),
-  upsell_4_link: z.string().url().optional().or(z.literal("")), // Novo campo
-  upsell_5_link: z.string().url().optional().or(z.literal("")), // Novo campo
-  upsell_6_link: z.string().url().optional().or(z.literal("")), // Novo campo
-  upsell_7_link: z.string().url().optional().or(z.literal("")), // Novo campo
+  upsell_4_link: z.string().url().optional().or(z.literal("")),
+  upsell_5_link: z.string().url().optional().or(z.literal("")),
+  upsell_6_link: z.string().url().optional().or(z.literal("")),
+  upsell_7_link: z.string().url().optional().or(z.literal("")),
   thank_you_page_link: z.string().url().optional().or(z.literal("")),
   platform: z.string().min(1, { message: "Selecione uma plataforma." }),
   niche: z.string().optional(),
@@ -54,7 +53,7 @@ interface OfferFormProps {
 
 export function OfferForm({ initialData }: OfferFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [scrapedImageUrl, setScrapedImageUrl] = useState<string | null>(null);
+  // Removido scrapedImageUrl e setScrapedImageUrl pois a ferramenta Spy será removida
   const router = useRouter();
   const isEditMode = !!initialData;
 
@@ -72,10 +71,10 @@ export function OfferForm({ initialData }: OfferFormProps) {
       upsell_1_link: initialData?.upsell_1_link ?? "",
       upsell_2_link: initialData?.upsell_2_link ?? "",
       upsell_3_link: initialData?.upsell_3_link ?? "",
-      upsell_4_link: initialData?.upsell_4_link ?? "", // Novo campo
-      upsell_5_link: initialData?.upsell_5_link ?? "", // Novo campo
-      upsell_6_link: initialData?.upsell_6_link ?? "", // Novo campo
-      upsell_7_link: initialData?.upsell_7_link ?? "", // Novo campo
+      upsell_4_link: initialData?.upsell_4_link ?? "",
+      upsell_5_link: initialData?.upsell_5_link ?? "",
+      upsell_6_link: initialData?.upsell_6_link ?? "",
+      upsell_7_link: initialData?.upsell_7_link ?? "",
       thank_you_page_link: initialData?.thank_you_page_link ?? "",
       platform: initialData?.platform ?? "",
       niche: initialData?.niche ?? "",
@@ -110,9 +109,12 @@ export function OfferForm({ initialData }: OfferFormProps) {
           .from("offer_images")
           .getPublicUrl(fileName);
         imageUrl = publicUrlData.publicUrl;
-      } else if (!isEditMode && scrapedImageUrl) {
-        imageUrl = scrapedImageUrl;
+      } else if (!isEditMode && imageUrl === undefined) { // Ajustado para garantir que imageUrl seja definido
+        throw new Error(
+          "A imagem é obrigatória. Faça o upload de um arquivo."
+        );
       }
+
 
       const { image, ...offerData } = values;
       const dataToUpsert = {
@@ -131,7 +133,7 @@ export function OfferForm({ initialData }: OfferFormProps) {
       } else {
         if (!imageUrl) {
           throw new Error(
-            "A imagem é obrigatória. Espione uma URL ou faça o upload de um arquivo."
+            "A imagem é obrigatória. Faça o upload de um arquivo."
           );
         }
         const { error } = await supabase
@@ -157,13 +159,7 @@ export function OfferForm({ initialData }: OfferFormProps) {
   return (
     <Form {...form}>
       <div className="space-y-8">
-        {!isEditMode && (
-          <SpyToolSection
-            setValue={form.setValue}
-            setScrapedImageUrl={setScrapedImageUrl}
-            scrapedImageUrl={scrapedImageUrl}
-          />
-        )}
+        {/* A SpyToolSection foi removida daqui */}
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <BasicInfoSection control={form.control} />
