@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { DollarSign, TrendingUp, Wallet, ArrowRightLeft } from "lucide-react";
+import { DollarSign, TrendingUp, Wallet, Bot } from "lucide-react";
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("pt-BR", {
@@ -111,7 +111,7 @@ export function RoiCalculator() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">ROAS</CardTitle>
-                  <ArrowRightLeft className="h-4 w-4 text-muted-foreground" />
+                  <Bot className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className={`text-2xl font-bold ${results.roas >= 1 ? 'text-green-500' : 'text-red-500'}`}>
