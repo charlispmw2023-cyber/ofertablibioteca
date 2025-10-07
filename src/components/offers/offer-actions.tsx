@@ -34,6 +34,7 @@ export function OfferActions({ offer }: OfferActionsProps) {
     { label: "Upsell 3", href: offer.upsell_3_link },
     { label: "Página de Obrigado", href: offer.thank_you_page_link },
     { label: "Drive", href: offer.drive_link },
+    { label: "Biblioteca de Anúncios", href: offer.ad_library_link }, // Adicionado aqui
   ].filter((link) => link.href);
 
   const handleDelete = async () => {
