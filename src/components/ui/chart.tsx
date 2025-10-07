@@ -36,7 +36,7 @@ const ChartContainer = React.forwardRef<HTMLDivElement, ChartContainerProps>(
           data-chart={chartId}
           ref={ref}
           className={cn(
-            "flex aspect-video justify-center text-foreground",
+            "flex aspect-video justify-center text-foreground min-w-0",
             className
           )}
           {...props}
@@ -222,12 +222,26 @@ ChartTooltipContent.displayName = "ChartTooltipContent";
 
 // region ChartLegend
 
+interface LegendPayloadItem {
+  value: string | number;
+  id?: string;
+  type?: string;
+  color?: string;
+  payload?: any; // The actual data object from the chart
+  dataKey?: string;
+  name?: string;
+  chartId?: string; // Adicionado para consistência
+  fill?: string; // Adicionado para consistência
+  stroke?: string; // Adicionado para consistência
+  // Adicione outras propriedades se necessário do RechartsPrimitive.LegendPayload
+}
+
 type ChartLegendProps = React.ComponentPropsWithoutRef<typeof RechartsPrimitive.Legend> &
   React.ComponentPropsWithoutRef<"div"> & {
     hideIcon?: boolean;
     formatter?: (
       value: string | number,
-      entry: RechartsPrimitive.LegendProps['payload'][number], // Corrigido o tipo aqui
+      entry: LegendPayloadItem, // Usando a interface local
       index: number
     ) => React.ReactNode;
     nameKey?: string;
@@ -248,14 +262,14 @@ const ChartLegend = React.forwardRef<HTMLDivElement, ChartLegendProps>(
       <div
         ref={ref}
         className={cn(
-          "flex items-center justify-center gap-4 flex-wrap",
+          "flex items-center justify-center gap-2 sm:gap-4 flex-wrap",
           verticalAlign === "top" && "pb-3",
           verticalAlign === "bottom" && "pt-3",
           className
         )}
         {...props}
       >
-        {payload.map((item: RechartsPrimitive.LegendProps['payload'][number], index: number) => { // Corrigido o tipo aqui
+        {payload.map((item: LegendPayloadItem, index: number) => { // Usando a interface local
           const key = `${nameKey || item.dataKey || "value"}`;
           const itemConfig = config[key];
           const indicatorColor = itemConfig?.color || item.fill || item.stroke || item.color;

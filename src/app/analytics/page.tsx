@@ -197,7 +197,7 @@ export default function AnalyticsPage() {
                       axisLine={false}
                       tickFormatter={(value: number) => `${formatCurrency(value)}`}
                     />
-                    <ChartTooltip content={ChartTooltipContent} />
+                    <ChartTooltip content={(props) => <ChartTooltipContent {...props} />} />
                     <Bar
                       dataKey="profit"
                       fill="hsl(var(--primary))"
@@ -241,7 +241,7 @@ export default function AnalyticsPage() {
                       axisLine={false}
                       tickFormatter={(value: number) => `${formatCurrency(value)}`}
                     />
-                    <ChartTooltip content={ChartTooltipContent} />
+                    <ChartTooltip content={(props) => <ChartTooltipContent {...props} />} />
                     <Bar
                       dataKey="profit"
                       fill="hsl(var(--primary))"
@@ -260,7 +260,7 @@ export default function AnalyticsPage() {
               <ChartContainer config={nicheChartConfig} className="h-[300px] w-full">
                 <ResponsiveContainer>
                   <PieChart>
-                    <ChartTooltip content={ChartTooltipContent} nameKey="name" />
+                    <ChartTooltip content={(props) => <ChartTooltipContent {...props} nameKey="name" />} />
                     <Pie
                       data={offersByNicheData}
                       dataKey="value"
@@ -280,7 +280,7 @@ export default function AnalyticsPage() {
                       ))}
                     </Pie>
                     <ChartLegend
-                      content={ChartLegendContent}
+                      content={(props) => <ChartLegendContent {...props} nameKey="name" />}
                       nameKey="name"
                     />
                   </PieChart>
