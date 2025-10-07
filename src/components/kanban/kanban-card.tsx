@@ -4,7 +4,8 @@ import type { Offer } from "@/components/offers/offer-card";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import Link from "next/link"; // Importando Link do Next.js
+import { Dialog, DialogTrigger } from "@/components/ui/dialog"; // Importando Dialog e DialogTrigger
+import { OfferLinksDialog } from "../offers/offer-links-dialog"; // Importando o modal de links
 
 interface KanbanCardProps {
   offer: Offer;
@@ -28,13 +29,16 @@ export function KanbanCard({ offer }: KanbanCardProps) {
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <Link href={`/offers/${offer.id}/edit`} passHref>
-        <Card className="mb-4 cursor-grab active:cursor-grabbing hover:bg-accent/50 transition-colors">
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">{offer.name}</CardTitle>
-          </CardHeader>
-        </Card>
-      </Link>
+      <Dialog>
+        <DialogTrigger asChild>
+          <Card className="mb-4 cursor-pointer active:cursor-grabbing hover:bg-accent/50 transition-colors">
+            <CardHeader>
+              <CardTitle className="text-sm font-medium">{offer.name}</CardTitle>
+            </CardHeader>
+          </Card>
+        </DialogTrigger>
+        <OfferLinksDialog offer={offer} />
+      </Dialog>
     </div>
   );
 }
