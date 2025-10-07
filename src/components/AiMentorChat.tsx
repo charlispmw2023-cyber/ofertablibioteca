@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -51,11 +52,8 @@ export function AiMentorChat() {
       });
 
       if (!response.ok) {
-        // --- INÍCIO DA MUDANÇA ---
-        // Captura e exibe a mensagem de erro detalhada do servidor
         const errorText = await response.text();
         throw new Error(`Erro da API: ${errorText}`);
-        // --- FIM DA MUDANÇA ---
       }
       
       if (!response.body) {
@@ -82,7 +80,6 @@ export function AiMentorChat() {
 
     } catch (error: any) {
       console.error("Erro ao buscar resposta da IA:", error);
-      // Exibe a mensagem de erro detalhada no chat
       setMessages(prev => [...prev, { text: error.message, sender: "ai" }]);
     } finally {
       setIsLoading(false);
@@ -105,13 +102,15 @@ export function AiMentorChat() {
                 }`}
               >
                 <div
-                  className={`max-w-xs lg:max-w-md rounded-lg px-4 py-2 ${
+                  className={`prose prose-sm max-w-xs lg:max-w-md rounded-lg px-4 py-2 ${
                     msg.sender === "user"
-                      ? "bg-primary text-primary-foreground"
+                      ? "bg-primary text-primary-foreground prose-invert"
                       : "bg-muted"
                   }`}
                 >
-                  <p className="text-sm whitespace-pre-wrap">{msg.text}{isLoading && msg.sender === 'ai' && index === messages.length - 1 ? '...' : ''}</p>
+                  <ReactMarkdown>
+                    {msg.text}
+                  </ReactMarkdown>
                 </div>
               </div>
             ))}
@@ -127,7 +126,7 @@ export function AiMentorChat() {
           <Input
             placeholder={isLoading ? "Mentor está digitando..." : "Pergunte ao seu mentor..."}
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => setInput(e.Target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             disabled={isLoading}
           />
