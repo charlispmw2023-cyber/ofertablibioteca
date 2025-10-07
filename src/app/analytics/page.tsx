@@ -25,6 +25,8 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
 } from "@/components/ui/chart";
 import { SummaryCard } from "../../components/analytics/summary-card";
 import { TopOffersList } from "../../components/analytics/top-offers-list";
@@ -62,7 +64,7 @@ export default function AnalyticsPage() {
   const averageRoi = totalCost > 0 ? (totalProfit / totalCost) * 100 : 0;
 
   const profitByPlatform = offers.reduce(
-    (acc, offer) => {
+    (acc: Record<string, number>, offer) => {
       const platform = offer.platform || "N/A";
       const profit = (offer.revenue ?? 0) - (offer.cost ?? 0);
       acc[platform] = (acc[platform] || 0) + profit;
@@ -75,7 +77,7 @@ export default function AnalyticsPage() {
     .sort((a, b) => b.profit - a.profit);
 
   const offersByNiche = offers.reduce(
-    (acc, offer) => {
+    (acc: Record<string, number>, offer) => {
       const niche = offer.niche || "Sem Nicho";
       acc[niche] = (acc[niche] || 0) + 1;
       return acc;
@@ -87,7 +89,7 @@ export default function AnalyticsPage() {
   );
 
   const profitByNiche = offers.reduce(
-    (acc, offer) => {
+    (acc: Record<string, number>, offer) => {
       const niche = offer.niche || "Sem Nicho";
       const profit = (offer.revenue ?? 0) - (offer.cost ?? 0);
       acc[niche] = (acc[niche] || 0) + profit;
@@ -105,6 +107,25 @@ export default function AnalyticsPage() {
         (b.revenue ?? 0) - (b.cost ?? 0) - ((a.revenue ?? 0) - (a.cost ?? 0))
     )
     .slice(0, 5);
+
+  // Chart config for Niche Distribution
+  const nicheChartConfig = offersByNicheData.reduce((acc, item, index) => {
+    const colors = [
+      "hsl(var(--primary))",
+      "hsl(var(--secondary))",
+      "hsl(var(--accent))",
+      "hsl(var(--muted))",
+      "hsl(var(--destructive))",
+      "#8884d8", // Exemplo de cor adicional
+      "#82ca9d", // Exemplo de cor adicional
+    ];
+    acc[item.name] = {
+      label: item.name,
+      color: colors[index % colors.length],
+    };
+    return acc;
+  }, {} as Record<string, { label: string; color: string }>);
+
 
   if (loading) {
     return (
@@ -173,9 +194,9 @@ export default function AnalyticsPage() {
                       fontSize={12}
                       tickLine={false}
                       axisLine={false}
-                      tickFormatter={(value) => `${formatCurrency(value as number)}`}
+                      tickFormatter={(value: number) => `${formatCurrency(value)}`}
                     />
-                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <ChartTooltip content={ChartTooltipContent} />
                     <Bar
                       dataKey="profit"
                       fill="hsl(var(--primary))"
@@ -217,9 +238,9 @@ export default function AnalyticsPage() {
                       fontSize={12}
                       tickLine={false}
                       axisLine={false}
-                      tickFormatter={(value) => `${formatCurrency(value as number)}`}
+                      tickFormatter={(value: number) => `${formatCurrency(value)}`}
                     />
-                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <ChartTooltip content={ChartTooltipContent} />
                     <Bar
                       dataKey="profit"
                       fill="hsl(var(--primary))"
@@ -235,20 +256,21 @@ export default function AnalyticsPage() {
               <CardTitle>Distribuição por Nicho</CardTitle>
             </CardHeader>
             <CardContent>
-              <ChartContainer config={{}} className="h-[300px] w-full">
+              <ChartContainer config={nicheChartConfig} className="h-[300px] w-full">
                 <ResponsiveContainer>
                   <PieChart>
-                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <ChartTooltip content={ChartTooltipContent} nameKey="name" />
                     <Pie
                       data={offersByNicheData}
                       dataKey="value"
                       nameKey="name"
                       cx="50%"
                       cy="50%"
-                      outerRadius={100}
+                      outerRadius={80}
+                      innerRadius={30}
                       fill="hsl(var(--primary))"
-                      label
                     />
+                    <ChartLegend content={ChartLegendContent} nameKey="name" />
                   </PieChart>
                 </ResponsiveContainer>
               </ChartContainer>

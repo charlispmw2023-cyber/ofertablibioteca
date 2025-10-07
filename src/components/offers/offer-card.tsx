@@ -23,7 +23,7 @@ import { format, formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { OfferActions } from "./offer-actions";
 import { NotebookText } from "lucide-react";
-import { FormattedText } from "@/components/common/formatted-text";
+import { FormattedText } from "@/components/common/formatted-text"; // Importando o novo componente
 import { OfferLinksDialog } from "./offer-links-dialog";
 
 export type Offer = {
