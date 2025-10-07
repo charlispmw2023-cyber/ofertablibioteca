@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import * as RechartsPrimitive from "recharts";
-import { LegendPayload, TooltipProps as RechartsTooltipProps, Props as RechartsLegendProps } from "recharts"; // Importando LegendPayload e outros tipos específicos
+import { LegendPayload, TooltipProps as RechartsTooltipProps, LegendProps as RechartsLegendProps } from "recharts"; // Corrigido: importando LegendProps em vez de Props
 
 import { cn } from "@/lib/utils";
 
@@ -83,9 +83,6 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
 
 // region ChartTooltip
 
-// Sobrescrevendo a tipagem da prop 'content' para ser mais flexível
-type ChartTooltipContentProp = React.ComponentType<RechartsTooltipProps<any, any>> | ((props: RechartsTooltipProps<any, any>) => React.ReactNode);
-
 type ChartTooltipProps = Omit<React.ComponentPropsWithoutRef<typeof RechartsPrimitive.Tooltip>, 'content'> &
   React.ComponentPropsWithoutRef<"div"> & {
     hideIndicator?: boolean;
@@ -100,7 +97,7 @@ type ChartTooltipProps = Omit<React.ComponentPropsWithoutRef<typeof RechartsPrim
     labelKey?: string;
     indicator?: "dot" | "line";
     color?: string;
-    content?: ChartTooltipContentProp; // Usando a tipagem sobrescrita
+    content?: RechartsTooltipProps<any, any>['content']; // Usando o tipo de conteúdo do Recharts
   };
 
 const ChartTooltip = React.forwardRef<
@@ -245,9 +242,6 @@ ChartTooltipContent.displayName = "ChartTooltipContent";
 
 // region ChartLegend
 
-// Sobrescrevendo a tipagem da prop 'content' para ser mais flexível
-type ChartLegendContentProp = React.ComponentType<RechartsLegendProps> | ((props: RechartsLegendProps) => React.ReactNode);
-
 type ChartLegendProps = Omit<React.ComponentPropsWithoutRef<typeof RechartsPrimitive.Legend>, 'content'> &
   React.ComponentPropsWithoutRef<"div"> & {
     hideIcon?: boolean;
@@ -257,7 +251,7 @@ type ChartLegendProps = Omit<React.ComponentPropsWithoutRef<typeof RechartsPrimi
       index: number
     ) => React.ReactNode;
     nameKey?: string;
-    content?: ChartLegendContentProp; // Usando a tipagem sobrescrita
+    content?: RechartsLegendProps['content']; // Usando o tipo de conteúdo do Recharts
   };
 
 const ChartLegend = React.forwardRef<HTMLDivElement, ChartLegendProps>(
