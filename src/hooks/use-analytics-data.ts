@@ -23,7 +23,6 @@ export const useAnalyticsData = (
         profitByPlatformData: [],
         offersByNicheData: [],
         profitByNicheData: [],
-        top5ProfitableOffers: [],
       };
     }
 
@@ -122,14 +121,6 @@ export const useAnalyticsData = (
         "niche",
         profitAggregator
       ).map((d) => ({ niche: d.name, profit: d.value })),
-      top5ProfitableOffers: [...currentOffers]
-        .sort(
-          (a, b) =>
-            (b.revenue ?? 0) -
-            (b.cost ?? 0) -
-            ((a.revenue ?? 0) - (a.cost ?? 0))
-        )
-        .slice(0, 5),
     };
   }, [allOffers, dateRange]);
 };

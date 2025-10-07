@@ -13,7 +13,7 @@ export function ProfitByPlatformChart({
   isMobile,
 }: ProfitByPlatformChartProps) {
   return (
-    <Card className="lg:col-span-2">
+    <Card>
       <CardHeader>
         <CardTitle>Lucro por Plataforma</CardTitle>
       </CardHeader>

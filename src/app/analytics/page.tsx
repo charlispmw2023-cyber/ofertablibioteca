@@ -10,9 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Offer } from "@/components/offers/offer-card";
 import { useAnalyticsData } from "@/hooks/use-analytics-data";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
-import { TopOffersList } from "@/components/analytics/top-offers-list";
 import { SummaryCardsGrid } from "@/components/analytics/SummaryCardsGrid";
 import { PerformanceOverTimeChart } from "@/components/analytics/PerformanceOverTimeChart";
 import { ProfitByPlatformChart } from "@/components/analytics/ProfitByPlatformChart";
@@ -62,7 +60,6 @@ export default function AnalyticsPage() {
     profitByPlatformData,
     offersByNicheData,
     profitByNicheData,
-    top5ProfitableOffers,
   } = useAnalyticsData(allOffers, dateRange);
 
   if (loading) {
@@ -98,16 +95,8 @@ export default function AnalyticsPage() {
           <PerformanceOverTimeChart data={performanceOverTimeData} />
         </div>
 
-        <div className="mb-6 grid gap-4 lg:grid-cols-3">
+        <div className="mb-6 grid grid-cols-1 gap-4">
           <ProfitByPlatformChart data={profitByPlatformData} isMobile={isMobile} />
-          <Card>
-            <CardHeader>
-              <CardTitle>Top 5 Ofertas Lucrativas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <TopOffersList offers={top5ProfitableOffers} />
-            </CardContent>
-          </Card>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
