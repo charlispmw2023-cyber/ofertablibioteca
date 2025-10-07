@@ -31,7 +31,6 @@ export function RoiCalculator() {
     }
 
     const profit = revenueValue - costValue;
-    // Corrigido: Usando a variável de lucro para garantir o cálculo correto do ROI
     const roi = costValue > 0 ? (profit / costValue) * 100 : 0;
 
     setResults({ profit, roi });
@@ -83,7 +82,9 @@ export function RoiCalculator() {
               </Card>
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Lucro</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    {results.profit >= 0 ? "Lucro" : "Prejuízo"}
+                  </CardTitle>
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
