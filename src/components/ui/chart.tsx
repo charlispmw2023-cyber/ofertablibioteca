@@ -222,26 +222,12 @@ ChartTooltipContent.displayName = "ChartTooltipContent";
 
 // region ChartLegend
 
-interface LegendPayloadItem {
-  value: string | number;
-  id?: string;
-  type?: string;
-  color?: string;
-  payload?: any; // The actual data object from the chart
-  dataKey?: string;
-  name?: string;
-  chartId?: string; // Adicionado para consistência
-  fill?: string; // Adicionado para consistência
-  stroke?: string; // Adicionado para consistência
-  // Adicione outras propriedades se necessário do RechartsPrimitive.LegendPayload
-}
-
 type ChartLegendProps = React.ComponentPropsWithoutRef<typeof RechartsPrimitive.Legend> &
   React.ComponentPropsWithoutRef<"div"> & {
     hideIcon?: boolean;
     formatter?: (
       value: string | number,
-      entry: LegendPayloadItem, // Usando a interface local
+      entry: RechartsPrimitive.LegendProps['payload'][number], // Corrigido o tipo aqui
       index: number
     ) => React.ReactNode;
     nameKey?: string;
@@ -269,7 +255,7 @@ const ChartLegend = React.forwardRef<HTMLDivElement, ChartLegendProps>(
         )}
         {...props}
       >
-        {payload.map((item: LegendPayloadItem, index: number) => { // Usando a interface local
+        {payload.map((item: RechartsPrimitive.LegendProps['payload'][number], index: number) => { // Corrigido o tipo aqui
           const key = `${nameKey || item.dataKey || "value"}`;
           const itemConfig = config[key];
           const indicatorColor = itemConfig?.color || item.fill || item.stroke || item.color;

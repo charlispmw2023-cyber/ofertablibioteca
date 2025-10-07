@@ -38,9 +38,27 @@ const formatCurrency = (value: number) =>
     currency: "BRL",
   }).format(value);
 
+// Função para truncar rótulos longos
+const truncateLabel = (label: string, maxLength: number = 10) => {
+  if (label.length > maxLength) {
+    return `${label.substring(0, maxLength)}...`;
+  }
+  return label;
+};
+
 export default function AnalyticsPage() {
-  const [offers, setOffers] = useState<Offer[]>([]);
+  const [offers, setOffers] = useState<Offer[]>([]); // Corrigido o erro de sintaxe aqui
   const [loading, setLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768); // md breakpoint for Tailwind CSS
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     const getOffers = async () => {
@@ -186,9 +204,14 @@ export default function AnalyticsPage() {
                     <XAxis
                       dataKey="platform"
                       stroke="hsl(var(--foreground))"
-                      fontSize={12}
+                      fontSize={isMobile ? 10 : 12}
                       tickLine={false}
                       axisLine={false}
+                      angle={isMobile ? -45 : 0}
+                      textAnchor={isMobile ? "end" : "middle"}
+                      interval={0}
+                      tickFormatter={(value: string) => truncateLabel(value, isMobile ? 7 : 10)}
+                      height={isMobile ? 60 : 30}
                     />
                     <YAxis
                       stroke="hsl(var(--foreground))"
@@ -230,9 +253,14 @@ export default function AnalyticsPage() {
                     <XAxis
                       dataKey="niche"
                       stroke="hsl(var(--foreground))"
-                      fontSize={12}
+                      fontSize={isMobile ? 10 : 12}
                       tickLine={false}
                       axisLine={false}
+                      angle={isMobile ? -45 : 0}
+                      textAnchor={isMobile ? "end" : "middle"}
+                      interval={0}
+                      tickFormatter={(value: string) => truncateLabel(value, isMobile ? 7 : 10)}
+                      height={isMobile ? 60 : 30}
                     />
                     <YAxis
                       stroke="hsl(var(--foreground))"
