@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -20,24 +20,68 @@ export function AiMentorChat() {
     },
   ]);
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  const handleSend = () => {
-    if (input.trim() === "") return;
+  const scrollToBottom = () => {
+    const scrollableView = scrollAreaRef.current?.querySelector('div[data-radix-scroll-area-viewport]');
+    if (scrollableView) {
+      scrollableView.scrollTop = scrollableView.scrollHeight;
+    }
+  };
 
-    const newMessages: Message[] = [...messages, { text: input, sender: "user" }];
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleSend = async () => {
+    if (input.trim() === "" || isLoading) return;
+
+    const userMessage: Message = { text: input, sender: "user" };
+    const newMessages: Message[] = [...messages, userMessage];
     setMessages(newMessages);
     setInput("");
+    setIsLoading(true);
 
-    // Placeholder for AI response
-    setTimeout(() => {
-      setMessages([
-        ...newMessages,
-        {
-          text: "Esta é uma resposta simulada. A integração com o modelo de IA será feita na próxima fase.",
-          sender: "ai",
-        },
-      ]);
-    }, 1000);
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ history: newMessages }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erro na API: ${response.statusText}`);
+      }
+      
+      if (!response.body) {
+        throw new Error("A resposta não contém um corpo.");
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let aiResponseText = "";
+      
+      setMessages(prev => [...prev, { text: "", sender: "ai" }]);
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        aiResponseText += decoder.decode(value, { stream: true });
+        setMessages(prev => {
+            const lastMessage = prev[prev.length - 1];
+            lastMessage.text = aiResponseText;
+            return [...prev.slice(0, -1), lastMessage];
+        });
+      }
+
+    } catch (error) {
+      console.error("Erro ao buscar resposta da IA:", error);
+      setMessages(prev => [...prev, { text: "Desculpe, ocorreu um erro. Verifique sua chave de API e tente novamente.", sender: "ai" }]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -46,7 +90,7 @@ export function AiMentorChat() {
         <CardTitle className="text-2xl">Mentor IA</CardTitle>
       </CardHeader>
       <CardContent className="flex-grow flex flex-col gap-4">
-        <ScrollArea className="flex-grow h-96 pr-4">
+        <ScrollArea className="flex-grow h-96 pr-4" ref={scrollAreaRef}>
           <div className="space-y-4">
             {messages.map((msg, index) => (
               <div
@@ -62,7 +106,7 @@ export function AiMentorChat() {
                       : "bg-muted"
                   }`}
                 >
-                  <p className="text-sm">{msg.text}</p>
+                  <p className="text-sm whitespace-pre-wrap">{msg.text}{isLoading && msg.sender === 'ai' && index === messages.length - 1 ? '...' : ''}</p>
                 </div>
               </div>
             ))}
@@ -76,12 +120,13 @@ export function AiMentorChat() {
             <Paperclip className="h-4 w-4" />
           </Button>
           <Input
-            placeholder="Pergunte ao seu mentor..."
+            placeholder={isLoading ? "Mentor está digitando..." : "Pergunte ao seu mentor..."}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+            disabled={isLoading}
           />
-          <Button size="icon" onClick={handleSend}>
+          <Button size="icon" onClick={handleSend} disabled={isLoading}>
             <Send className="h-4 w-4" />
           </Button>
         </div>
