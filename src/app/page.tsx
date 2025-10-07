@@ -137,11 +137,11 @@ export default function Home() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <div className="flex w-full items-center gap-2 sm:w-auto">
+            <div className="flex flex-col sm:flex-row w-full gap-2 sm:w-auto">
               <Button
                 variant="outline"
                 onClick={() => setIsImportDialogOpen(true)}
-                className="w-1/3 sm:w-auto"
+                className="w-full"
               >
                 <Upload className="mr-2 h-4 w-4" />
                 Importar
@@ -149,7 +149,7 @@ export default function Home() {
               <Button
                 variant="outline"
                 onClick={handleExport}
-                className="w-1/3 sm:w-auto"
+                className="w-full"
               >
                 <Download className="mr-2 h-4 w-4" />
                 Exportar
@@ -157,7 +157,7 @@ export default function Home() {
               <Link
                 href="/offers/new"
                 passHref
-                className="w-1/3 sm:w-auto"
+                className="w-full"
               >
                 <Button className="w-full shrink-0">
                   Adicionar Nova Oferta
