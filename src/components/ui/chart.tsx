@@ -40,7 +40,7 @@ const ChartContainer = React.forwardRef<HTMLDivElement, ChartContainerProps>(
           data-chart={chartId}
           ref={ref}
           className={cn(
-            "flex aspect-video justify-center text-foreground min-w-0",
+            "flex justify-center text-foreground min-w-0",
             className
           )}
           {...props}
