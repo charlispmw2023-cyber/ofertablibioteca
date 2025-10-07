@@ -200,7 +200,10 @@ export default function AnalyticsPage() {
             <CardContent>
               <ChartContainer config={{}} className="h-[300px] w-full">
                 <ResponsiveContainer>
-                  <BarChart data={profitByPlatformData}>
+                  <BarChart
+                    data={profitByPlatformData}
+                    margin={{ left: -24, right: 4 }}
+                  >
                     <XAxis
                       dataKey="platform"
                       stroke="hsl(var(--foreground))"
@@ -249,7 +252,10 @@ export default function AnalyticsPage() {
             <CardContent>
               <ChartContainer config={{}} className="h-[300px] w-full">
                 <ResponsiveContainer>
-                  <BarChart data={profitByNicheData}>
+                  <BarChart
+                    data={profitByNicheData}
+                    margin={{ left: -24, right: 4 }}
+                  >
                     <XAxis
                       dataKey="niche"
                       stroke="hsl(var(--foreground))"
