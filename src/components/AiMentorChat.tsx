@@ -50,12 +50,8 @@ export function AiMentorChat() {
         body: JSON.stringify({ history: newMessages }),
       });
 
-      if (!response.ok) {
+      if (!response.ok || !response.body) {
         throw new Error(`Erro na API: ${response.statusText}`);
-      }
-      
-      if (!response.body) {
-        throw new Error("A resposta não contém um corpo.");
       }
 
       const reader = response.body.getReader();
