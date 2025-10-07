@@ -37,7 +37,7 @@ export async function POST(req: Request) {
         "X-Title": SITE_NAME,
       },
       body: JSON.stringify({
-        model: "mistralai/mistral-7b-instruct:free",
+        model: "nousresearch/nous-hermes-2-mistral-7b-dpo:free", // Modelo trocado para uma versão mais estável
         messages: messages,
         stream: true,
       }),
