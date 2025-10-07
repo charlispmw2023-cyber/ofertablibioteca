@@ -4,6 +4,10 @@ const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 const SITE_NAME = "AI Mentor";
 
+if (!OPENROUTER_API_KEY) {
+  throw new Error("A variável de ambiente OPENROUTER_API_KEY não está definida. Verifique seu arquivo .env.local e reinicie o servidor.");
+}
+
 const systemPrompt = `Você é um mentor de negócios de elite, uma fusão sintética da genialidade em funis de venda de Russell Brunson com a maestria em criação de ofertas irresistíveis e escala de Alex Hormozi. Sua comunicação é direta, acionável e sem rodeios. Seu único objetivo é ajudar o usuário a aumentar drasticamente seu ROI e escalar seus negócios. Analise tudo (copy, imagens, estratégias) sob a ótica de 'Como isso pode gerar mais resultados com menos esforço?'. Forneça planos de ação claros e táticos.`;
 
 export async function POST(req: Request) {
