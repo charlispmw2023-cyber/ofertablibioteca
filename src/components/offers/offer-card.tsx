@@ -43,6 +43,7 @@ export type Offer = {
   upsell_3_link?: string;
   thank_you_page_link?: string;
   drive_link?: string;
+  ad_library_link?: string; // Novo campo
 };
 
 interface OfferCardProps {

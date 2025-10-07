@@ -18,6 +18,7 @@ export const exportToCsv = (data: Offer[], fileName: string) => {
     "Link do Upsell 3": offer.upsell_3_link,
     "Link da Página de Obrigado": offer.thank_you_page_link,
     "Link do Drive": offer.drive_link,
+    "Link da Biblioteca de Anúncios": offer.ad_library_link, // Novo campo
     "Data de Criação": new Date(offer.created_at).toLocaleString("pt-BR"),
     "URL da Imagem": offer.image_url,
   }));

@@ -39,6 +39,7 @@ const offerFormSchema = z.object({
   cost: z.coerce.number().optional(),
   revenue: z.coerce.number().optional(),
   drive_link: z.string().url().optional().or(z.literal("")),
+  ad_library_link: z.string().url().optional().or(z.literal("")), // Novo campo
 });
 
 type OfferFormValues = z.infer<typeof offerFormSchema>;
@@ -73,6 +74,7 @@ export function OfferForm({ initialData }: OfferFormProps) {
       cost: initialData?.cost ?? undefined,
       revenue: initialData?.revenue ?? undefined,
       drive_link: initialData?.drive_link ?? "",
+      ad_library_link: initialData?.ad_library_link ?? "", // Novo campo
     },
   });
 

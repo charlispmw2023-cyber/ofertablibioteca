@@ -41,6 +41,19 @@ export function BasicInfoSection({ control }: BasicInfoSectionProps) {
           </FormItem>
         )}
       />
+      <FormField
+        control={control}
+        name="ad_library_link"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Link da Biblioteca de Anúncios</FormLabel>
+            <FormControl>
+              <Input placeholder="https://bibliotecadeanuncios.com/..." {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
     </div>
   );
 }
