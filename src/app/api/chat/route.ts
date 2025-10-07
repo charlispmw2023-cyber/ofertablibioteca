@@ -1,6 +1,12 @@
 export const runtime = "edge";
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+// --- INÍCIO DO DIAGNÓSTICO ---
+console.log("--- VERIFICAÇÃO NO SERVIDOR ---");
+console.log("Chave OPENROUTER_API_KEY encontrada:", OPENROUTER_API_KEY ? `Sim, terminando em ...${OPENROUTER_API_KEY.slice(-4)}` : "NÃO ENCONTRADA");
+console.log("-----------------------------");
+// --- FIM DO DIAGNÓSTICO ---
+
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 const SITE_NAME = "AI Mentor";
 
