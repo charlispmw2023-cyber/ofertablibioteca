@@ -227,7 +227,7 @@ type ChartLegendProps = React.ComponentPropsWithoutRef<typeof RechartsPrimitive.
     hideIcon?: boolean;
     formatter?: (
       value: string,
-      entry: RechartsPrimitive.LegendProps['payload'][number], // Corrigido o tipo aqui
+      entry: RechartsPrimitive.LegendPayload, // Corrigido o tipo aqui
       index: number
     ) => React.ReactNode;
     nameKey?: string;
@@ -255,7 +255,7 @@ const ChartLegend = React.forwardRef<HTMLDivElement, ChartLegendProps>(
         )}
         {...props}
       >
-        {payload.map((item: any, index: number) => {
+        {payload.map((item: RechartsPrimitive.LegendPayload, index: number) => {
           const key = `${nameKey || item.dataKey || "value"}`;
           const itemConfig = config[key];
           const indicatorColor = itemConfig?.color || item.fill || item.stroke || item.color;
@@ -286,7 +286,7 @@ const ChartLegend = React.forwardRef<HTMLDivElement, ChartLegendProps>(
                 )
               )}
               {formatter ? (
-                formatter(item.value, item, index)
+                formatter(item.value as string, item, index)
               ) : (
                 <span className="text-sm text-muted-foreground">
                   {itemConfig?.label || item.name}

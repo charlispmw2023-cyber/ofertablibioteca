@@ -149,7 +149,7 @@ export default function AnalyticsPage() {
           </Link>
         </div>
       </header>
-      <main className="container mx-auto p-4 sm:p-6">
+      <main className="container mx-auto px-2 py-4 sm:px-4 sm:py-6">
         <div className="mb-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <SummaryCard
             title="Receita Total"

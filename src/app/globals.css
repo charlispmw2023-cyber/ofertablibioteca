@@ -73,6 +73,7 @@
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
+    /* Removido overflow-x: hidden; para permitir que o layout se ajuste naturalmente */
   }
 }
 
