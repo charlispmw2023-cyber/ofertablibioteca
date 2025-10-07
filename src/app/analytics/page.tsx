@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/chart";
 import { SummaryCard } from "../../components/analytics/summary-card";
 import { TopOffersList } from "../../components/analytics/top-offers-list";
+import { useTheme } from "next-themes";
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("pt-BR", {
@@ -50,6 +51,7 @@ export default function AnalyticsPage() {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const { resolvedTheme } = useTheme();
 
   useEffect(() => {
     const checkMobile = () => {
@@ -145,6 +147,38 @@ export default function AnalyticsPage() {
     return acc;
   }, {} as Record<string, { label: string; color: string }>);
 
+  const renderCustomizedPieLabel = ({
+    cx,
+    cy,
+    midAngle,
+    outerRadius,
+    percent,
+    name,
+    value,
+  }: any) => {
+    const RADIAN = Math.PI / 180;
+    const radius = outerRadius + 25;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    const textAnchor = x > cx ? "start" : "end";
+
+    if (percent < 0.05) {
+      return null;
+    }
+
+    return (
+      <text
+        x={x}
+        y={y}
+        fill={resolvedTheme === "dark" ? "#f9fafb" : "#111827"}
+        textAnchor={textAnchor}
+        dominantBaseline="central"
+        className="text-sm font-medium"
+      >
+        {`${name} (${value})`}
+      </text>
+    );
+  };
 
   if (loading) {
     return (
@@ -305,7 +339,7 @@ export default function AnalyticsPage() {
                       cy="50%"
                       outerRadius={80}
                       innerRadius={30}
-                      label={({ name, value }: { name: string; value: number }) => `${name} (${value})`}
+                      label={renderCustomizedPieLabel}
                       labelLine={false}
                     >
                       {offersByNicheData.map((entry, index) => (

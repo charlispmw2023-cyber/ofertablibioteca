@@ -145,14 +145,14 @@ const ChartTooltipContent = React.forwardRef<
         <div
           ref={ref}
           className={cn(
-            "rounded-lg border bg-background p-2 text-sm shadow-md",
+            "rounded-lg border bg-background p-2 text-base shadow-md",
             className
           )}
           {...props}
         >
-          {!hideLabel ? tooltipLabel : null}
+          {!hideLabel && <div className="pb-1 font-medium">{tooltipLabel}</div>}
           <div className="grid gap-1.5">
-            {payload.map((item: any) => {
+            {payload.map((item: any, index: number) => {
               const key = `${nameKey || item.name || item.dataKey || "value"}`;
               const itemConfig = config[key];
               const indicatorColor =
@@ -160,7 +160,7 @@ const ChartTooltipContent = React.forwardRef<
 
               return (
                 <div
-                  key={item.dataKey}
+                  key={index}
                   className={cn(
                     "flex items-center gap-2",
                     `recharts-tooltip-item-${item.chartId}-${key}`
@@ -185,19 +185,16 @@ const ChartTooltipContent = React.forwardRef<
                   {formatter && item?.value !== undefined ? (
                     formatter(item.value, item.name, item)
                   ) : (
-                    <>
-                      <div className="grid gap-1.5">
-                        {!hideLabel ? tooltipLabel : null}
-                        <span className="text-muted-foreground">
-                          {itemConfig?.label || item.name}
-                        </span>
-                      </div>
-                      {item.value && (
-                        <span className="font-mono font-medium tabular-nums text-foreground">
+                    <div className="grid flex-1 grid-cols-2 items-center gap-2">
+                      <span className="text-muted-foreground">
+                        {itemConfig?.label || item.name}
+                      </span>
+                      {item.value != null && (
+                        <span className="font-mono font-medium tabular-nums text-right text-foreground">
                           {item.value.toLocaleString()}
                         </span>
                       )}
-                    </>
+                    </div>
                   )}
                 </div>
               );
