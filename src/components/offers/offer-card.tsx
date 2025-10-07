@@ -168,7 +168,7 @@ export function OfferCard({ offer }: OfferCardProps) {
                 <DialogHeader>
                   <DialogTitle>Observações sobre "{offer.name}"</DialogTitle>
                 </DialogHeader>
-                <div className="prose prose-sm dark:prose-invert whitespace-pre-wrap break-words">
+                <div className="prose prose-sm dark:prose-invert whitespace-pre-wrap break-all">
                   {offer.observations}
                 </div>
               </DialogContent>
