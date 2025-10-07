@@ -126,7 +126,7 @@ export function AiMentorChat() {
           <Input
             placeholder={isLoading ? "Mentor está digitando..." : "Pergunte ao seu mentor..."}
             value={input}
-            onChange={(e) => setInput(e.Target.value)}
+            onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             disabled={isLoading}
           />
