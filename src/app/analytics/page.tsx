@@ -17,6 +17,7 @@ import {
   ResponsiveContainer,
   XAxis,
   YAxis,
+  Cell as RechartsPrimitiveCell, // Importando Cell com alias
 } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import type { Offer } from "@/components/offers/offer-card";
@@ -150,7 +151,7 @@ export default function AnalyticsPage() {
         </div>
       </header>
       <main className="container mx-auto px-2 py-4 sm:px-4 sm:py-6">
-        <div className="mb-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="mb-6 grid gap-2 sm:gap-4 md:grid-cols-2 lg:grid-cols-4">
           <SummaryCard
             title="Receita Total"
             value={formatCurrency(totalRevenue)}
@@ -173,7 +174,7 @@ export default function AnalyticsPage() {
           />
         </div>
 
-        <div className="mb-6 grid gap-6 lg:grid-cols-3">
+        <div className="mb-6 grid gap-2 sm:gap-4 lg:grid-cols-3">
           <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle>Lucro por Plataforma</CardTitle>
@@ -217,7 +218,7 @@ export default function AnalyticsPage() {
           </Card>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-2 sm:gap-4 md:grid-cols-2">
           <Card>
             <CardHeader>
               <CardTitle>Lucro por Nicho</CardTitle>
@@ -268,9 +269,20 @@ export default function AnalyticsPage() {
                       cy="50%"
                       outerRadius={80}
                       innerRadius={30}
-                      fill="hsl(var(--primary))"
+                      label={({ name, value }: { name: string; value: number }) => `${name} (${value})`}
+                      labelLine={false}
+                    >
+                      {offersByNicheData.map((entry, index) => (
+                        <RechartsPrimitiveCell
+                          key={`cell-${index}`}
+                          fill={nicheChartConfig[entry.name]?.color || "gray"}
+                        />
+                      ))}
+                    </Pie>
+                    <ChartLegend
+                      content={ChartLegendContent}
+                      nameKey="name"
                     />
-                    <ChartLegend content={ChartLegendContent} nameKey="name" />
                   </PieChart>
                 </ResponsiveContainer>
               </ChartContainer>
