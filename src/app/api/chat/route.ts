@@ -37,7 +37,7 @@ export async function POST(req: Request) {
         "X-Title": SITE_NAME,
       },
       body: JSON.stringify({
-        model: "openchat/openchat-7b:free", // Modelo trocado para outra alternativa gratuita e estável
+        model: "mistralai/mistral-7b-instruct:free", // Voltando para o modelo padrão e mais estável
         messages: messages,
         stream: true,
       }),
