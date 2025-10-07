@@ -47,7 +47,7 @@ const truncateLabel = (label: string, maxLength: number = 10) => {
 };
 
 export default function AnalyticsPage() {
-  const [offers, setOffers] = useState<Offer[]>([]); // Corrigido o erro de sintaxe aqui
+  const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -220,7 +220,7 @@ export default function AnalyticsPage() {
                       axisLine={false}
                       tickFormatter={(value: number) => `${formatCurrency(value)}`}
                     />
-                    <ChartTooltip content={(props) => <ChartTooltipContent {...props} />} />
+                    <ChartTooltip content={ChartTooltipContent} />
                     <Bar
                       dataKey="profit"
                       fill="hsl(var(--primary))"
@@ -269,7 +269,7 @@ export default function AnalyticsPage() {
                       axisLine={false}
                       tickFormatter={(value: number) => `${formatCurrency(value)}`}
                     />
-                    <ChartTooltip content={(props) => <ChartTooltipContent {...props} />} />
+                    <ChartTooltip content={ChartTooltipContent} />
                     <Bar
                       dataKey="profit"
                       fill="hsl(var(--primary))"
@@ -288,7 +288,7 @@ export default function AnalyticsPage() {
               <ChartContainer config={nicheChartConfig} className="h-[300px] w-full">
                 <ResponsiveContainer>
                   <PieChart>
-                    <ChartTooltip content={(props) => <ChartTooltipContent {...props} nameKey="name" />} />
+                    <ChartTooltip content={ChartTooltipContent} nameKey="name" />
                     <Pie
                       data={offersByNicheData}
                       dataKey="value"
@@ -308,7 +308,7 @@ export default function AnalyticsPage() {
                       ))}
                     </Pie>
                     <ChartLegend
-                      content={(props) => <ChartLegendContent {...props} nameKey="name" />}
+                      content={ChartLegendContent}
                       nameKey="name"
                     />
                   </PieChart>
