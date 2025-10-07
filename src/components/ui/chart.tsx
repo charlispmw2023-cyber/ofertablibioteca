@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import * as RechartsPrimitive from "recharts";
+import { LegendPayload, TooltipProps as RechartsTooltipProps, Props as RechartsLegendProps } from "recharts"; // Importando LegendPayload e outros tipos específicos
 
 import { cn } from "@/lib/utils";
 
@@ -82,7 +83,10 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
 
 // region ChartTooltip
 
-type ChartTooltipProps = React.ComponentPropsWithoutRef<typeof RechartsPrimitive.Tooltip> &
+// Sobrescrevendo a tipagem da prop 'content' para ser mais flexível
+type ChartTooltipContentProp = React.ComponentType<RechartsTooltipProps<any, any>> | ((props: RechartsTooltipProps<any, any>) => React.ReactNode);
+
+type ChartTooltipProps = Omit<React.ComponentPropsWithoutRef<typeof RechartsPrimitive.Tooltip>, 'content'> &
   React.ComponentPropsWithoutRef<"div"> & {
     hideIndicator?: boolean;
     hideLabel?: boolean;
@@ -96,6 +100,7 @@ type ChartTooltipProps = React.ComponentPropsWithoutRef<typeof RechartsPrimitive
     labelKey?: string;
     indicator?: "dot" | "line";
     color?: string;
+    content?: ChartTooltipContentProp; // Usando a tipagem sobrescrita
   };
 
 const ChartTooltip = React.forwardRef<
@@ -117,6 +122,7 @@ const ChartTooltip = React.forwardRef<
       color,
       nameKey,
       labelKey,
+      content: Content, // Renomeando content para Content para evitar conflito
       ...props
     },
     ref
@@ -140,6 +146,23 @@ const ChartTooltip = React.forwardRef<
     }, [label, labelFormatter, payload, hideLabel, config]);
 
     if (active && payload?.length) {
+      // Se um componente de conteúdo foi fornecido, renderize-o
+      if (Content) {
+        return React.createElement(Content, {
+          active,
+          payload,
+          label,
+          labelFormatter,
+          formatter,
+          color,
+          nameKey,
+          labelKey,
+          ...props,
+          ref,
+        });
+      }
+
+      // Caso contrário, renderize o conteúdo padrão
       return (
         <div
           ref={ref}
@@ -222,20 +245,24 @@ ChartTooltipContent.displayName = "ChartTooltipContent";
 
 // region ChartLegend
 
-type ChartLegendProps = React.ComponentPropsWithoutRef<typeof RechartsPrimitive.Legend> &
+// Sobrescrevendo a tipagem da prop 'content' para ser mais flexível
+type ChartLegendContentProp = React.ComponentType<RechartsLegendProps> | ((props: RechartsLegendProps) => React.ReactNode);
+
+type ChartLegendProps = Omit<React.ComponentPropsWithoutRef<typeof RechartsPrimitive.Legend>, 'content'> &
   React.ComponentPropsWithoutRef<"div"> & {
     hideIcon?: boolean;
     formatter?: (
       value: string | number,
-      entry: RechartsPrimitive.LegendPayload, // Usando o tipo RechartsPrimitive.LegendPayload diretamente
+      entry: LegendPayload, // Usando o tipo LegendPayload importado
       index: number
     ) => React.ReactNode;
     nameKey?: string;
+    content?: ChartLegendContentProp; // Usando a tipagem sobrescrita
   };
 
 const ChartLegend = React.forwardRef<HTMLDivElement, ChartLegendProps>(
   (
-    { className, hideIcon = false, payload, verticalAlign = "bottom", nameKey, formatter, ...props },
+    { className, hideIcon = false, payload, verticalAlign = "bottom", nameKey, formatter, content: Content, ...props },
     ref
   ) => {
     const { config } = React.useContext(ChartContext);
@@ -244,6 +271,19 @@ const ChartLegend = React.forwardRef<HTMLDivElement, ChartLegendProps>(
       return null;
     }
 
+    // Se um componente de conteúdo foi fornecido, renderize-o
+    if (Content) {
+      return React.createElement(Content, {
+        payload,
+        verticalAlign,
+        nameKey,
+        formatter,
+        ...props,
+        ref,
+      });
+    }
+
+    // Caso contrário, renderize o conteúdo padrão
     return (
       <div
         ref={ref}
@@ -255,7 +295,7 @@ const ChartLegend = React.forwardRef<HTMLDivElement, ChartLegendProps>(
         )}
         {...props}
       >
-        {payload.map((item: RechartsPrimitive.LegendPayload, index: number) => { // Usando RechartsPrimitive.LegendPayload diretamente
+        {payload.map((item: LegendPayload, index: number) => { // Usando LegendPayload importado
           const key = `${nameKey || item.dataKey || "value"}`;
           const itemConfig = config[key];
           const indicatorColor = itemConfig?.color || item.fill || item.stroke || item.color;
