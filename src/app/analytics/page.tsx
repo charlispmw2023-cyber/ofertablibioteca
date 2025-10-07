@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, XCircle } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { subDays } from "date-fns";
 
@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Offer } from "@/components/offers/offer-card";
 import { useAnalyticsData } from "@/hooks/use-analytics-data";
 
+import { Button } from "@/components/ui/button";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { SummaryCardsGrid } from "@/components/analytics/SummaryCardsGrid";
 import { PerformanceOverTimeChart } from "@/components/analytics/PerformanceOverTimeChart";
@@ -25,6 +26,8 @@ export default function AnalyticsPage() {
     from: subDays(new Date(), 29),
     to: new Date(),
   });
+  const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
+  const [selectedNiche, setSelectedNiche] = useState<string | null>(null);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -60,7 +63,12 @@ export default function AnalyticsPage() {
     profitByPlatformData,
     offersByNicheData,
     profitByNicheData,
-  } = useAnalyticsData(allOffers, dateRange);
+  } = useAnalyticsData(allOffers, dateRange, selectedPlatform, selectedNiche);
+
+  const clearFilters = () => {
+    setSelectedPlatform(null);
+    setSelectedNiche(null);
+  };
 
   if (loading) {
     return (
@@ -74,7 +82,7 @@ export default function AnalyticsPage() {
     <div className="min-h-screen">
       <header className="sticky top-0 z-10 border-b bg-card/95 backdrop-blur-sm">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <h1 className="text-xl font-semibold">Dashboard Analítico 4.0</h1>
+          <h1 className="text-xl font-semibold">Dashboard Analítico 5.0</h1>
           <Link
             href="/"
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
@@ -85,7 +93,15 @@ export default function AnalyticsPage() {
         </div>
       </header>
       <main className="container mx-auto px-4 py-6">
-        <div className="mb-6 flex justify-end">
+        <div className="mb-6 flex flex-col items-end gap-4 sm:flex-row sm:justify-between">
+          {selectedPlatform || selectedNiche ? (
+            <Button variant="ghost" onClick={clearFilters}>
+              <XCircle className="mr-2 h-4 w-4" />
+              Limpar Filtros
+            </Button>
+          ) : (
+            <div />
+          )}
           <DateRangePicker date={dateRange} onDateChange={setDateRange} />
         </div>
 
@@ -96,12 +112,24 @@ export default function AnalyticsPage() {
         </div>
 
         <div className="mb-6 grid grid-cols-1 gap-4">
-          <ProfitByPlatformChart data={profitByPlatformData} isMobile={isMobile} />
+          <ProfitByPlatformChart
+            data={profitByPlatformData}
+            isMobile={isMobile}
+            selectedPlatform={selectedPlatform}
+            onPlatformSelect={setSelectedPlatform}
+          />
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <ProfitByNicheChart data={profitByNicheData} isMobile={isMobile} />
-          <NicheDistributionPieChart data={offersByNicheData} />
+          <ProfitByNicheChart
+            data={profitByNicheData}
+            isMobile={isMobile}
+          />
+          <NicheDistributionPieChart
+            data={offersByNicheData}
+            selectedNiche={selectedNiche}
+            onNicheSelect={setSelectedNiche}
+          />
         </div>
       </main>
     </div>

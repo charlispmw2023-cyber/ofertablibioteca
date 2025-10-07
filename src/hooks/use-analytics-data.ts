@@ -12,33 +12,48 @@ const calculatePercentageChange = (current: number, previous: number) => {
 
 export const useAnalyticsData = (
   allOffers: Offer[],
-  dateRange: DateRange | undefined
+  dateRange: DateRange | undefined,
+  selectedPlatform: string | null,
+  selectedNiche: string | null
 ) => {
   return useMemo(() => {
+    const baseReturn = {
+      currentPeriodMetrics: { revenue: 0, cost: 0, profit: 0, roi: 0 },
+      trends: { revenue: 0, cost: 0, profit: 0 },
+      performanceOverTimeData: [],
+      profitByPlatformData: [],
+      offersByNicheData: [],
+      profitByNicheData: [],
+    };
+
     if (!dateRange?.from) {
-      return {
-        currentPeriodMetrics: { revenue: 0, cost: 0, profit: 0, roi: 0 },
-        trends: { revenue: 0, cost: 0, profit: 0 },
-        performanceOverTimeData: [],
-        profitByPlatformData: [],
-        offersByNicheData: [],
-        profitByNicheData: [],
-      };
+      return baseReturn;
     }
 
-    const to = dateRange.to || dateRange.from;
-    const duration = differenceInDays(to, dateRange.from);
-    const prevFrom = subDays(dateRange.from, duration + 1);
+    const from = dateRange.from;
+    const to = dateRange.to || from;
+    const duration = differenceInDays(to, from);
+    const prevFrom = subDays(from, duration + 1);
     const prevTo = subDays(to, duration + 1);
 
-    const filterOffersByDate = (offers: Offer[], from: Date, to: Date) =>
+    const filterOffersByDate = (offers: Offer[], fromDate: Date, toDate: Date) =>
       offers.filter((offer) => {
         const offerDate = startOfDay(new Date(offer.created_at));
-        return offerDate >= startOfDay(from) && offerDate <= startOfDay(to);
+        return offerDate >= startOfDay(fromDate) && offerDate <= startOfDay(toDate);
       });
 
-    const currentOffers = filterOffersByDate(allOffers, dateRange.from, to);
+    let currentOffers = filterOffersByDate(allOffers, from, to);
     const previousOffers = filterOffersByDate(allOffers, prevFrom, prevTo);
+
+    // Apply interactive filters
+    if (selectedPlatform) {
+      currentOffers = currentOffers.filter(
+        (o) => o.platform === selectedPlatform
+      );
+    }
+    if (selectedNiche) {
+      currentOffers = currentOffers.filter((o) => o.niche === selectedNiche);
+    }
 
     const calculateMetrics = (offers: Offer[]) => {
       const revenue = offers.reduce((acc, o) => acc + (o.revenue ?? 0), 0);
@@ -89,7 +104,8 @@ export const useAnalyticsData = (
       key: keyof Offer,
       aggregator: (acc: number, offer: Offer) => number
     ) => {
-      const grouped = offers.reduce((acc, offer) => {
+      const fullPeriodOffers = filterOffersByDate(allOffers, from, to);
+      const grouped = fullPeriodOffers.reduce((acc, offer) => {
         const groupKey = (offer[key] as string) || "N/A";
         acc[groupKey] = aggregator(acc[groupKey] || 0, offer);
         return acc;
@@ -122,5 +138,5 @@ export const useAnalyticsData = (
         profitAggregator
       ).map((d) => ({ niche: d.name, profit: d.value })),
     };
-  }, [allOffers, dateRange]);
+  }, [allOffers, dateRange, selectedPlatform, selectedNiche]);
 };

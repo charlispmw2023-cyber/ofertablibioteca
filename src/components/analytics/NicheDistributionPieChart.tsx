@@ -13,12 +13,22 @@ import { truncateLabel } from "@/lib/analytics-utils";
 
 interface NicheDistributionPieChartProps {
   data: { name: string; value: number }[];
+  selectedNiche: string | null;
+  onNicheSelect: (niche: string | null) => void;
 }
 
 export function NicheDistributionPieChart({
   data,
+  selectedNiche,
+  onNicheSelect,
 }: NicheDistributionPieChartProps) {
   const { resolvedTheme } = useTheme();
+
+  const handlePieClick = (payload: any) => {
+    if (payload && payload.name) {
+      onNicheSelect(payload.name === selectedNiche ? null : payload.name);
+    }
+  };
 
   const chartConfig = useMemo(
     () =>
@@ -90,11 +100,16 @@ export function NicheDistributionPieChart({
                 innerRadius={30}
                 label={renderCustomizedPieLabel}
                 labelLine={false}
+                onClick={handlePieClick}
+                className="cursor-pointer"
               >
-                {data.map((entry, index) => (
+                {data.map((entry) => (
                   <Cell
-                    key={`cell-${index}`}
+                    key={`cell-${entry.name}`}
                     fill={chartConfig[entry.name]?.color || "gray"}
+                    opacity={
+                      !selectedNiche || selectedNiche === entry.name ? 1 : 0.3
+                    }
                   />
                 ))}
               </Pie>
