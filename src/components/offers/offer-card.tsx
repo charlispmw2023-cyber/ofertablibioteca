@@ -23,6 +23,7 @@ import { format, formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { OfferActions } from "./offer-actions";
 import { NotebookText } from "lucide-react";
+import { FormattedText } from "@/components/common/formatted-text"; // Importando o novo componente
 
 export type Offer = {
   id: string;
@@ -169,7 +170,7 @@ export function OfferCard({ offer }: OfferCardProps) {
                   <DialogTitle>Observações sobre "{offer.name}"</DialogTitle>
                 </DialogHeader>
                 <div className="prose prose-sm dark:prose-invert whitespace-pre-wrap break-all">
-                  {offer.observations}
+                  <FormattedText text={offer.observations} />
                 </div>
               </DialogContent>
             </Dialog>
