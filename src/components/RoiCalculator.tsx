@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { DollarSign, TrendingUp, Wallet } from "lucide-react";
+import { DollarSign, TrendingUp, Wallet, Repeat } from "lucide-react";
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("pt-BR", {
@@ -19,6 +19,7 @@ export function RoiCalculator() {
   const [results, setResults] = useState<{
     profit: number;
     roi: number;
+    roas: number;
   } | null>(null);
 
   const handleCalculate = () => {
@@ -31,9 +32,12 @@ export function RoiCalculator() {
     }
 
     const profit = revenueValue - costValue;
+    // ROI (Retorno sobre o Investimento) = (Lucro / Custo) * 100
     const roi = costValue > 0 ? (profit / costValue) * 100 : 0;
+    // ROAS (Retorno sobre o Gasto com Anúncios) = Receita / Custo
+    const roas = costValue > 0 ? revenueValue / costValue : 0;
 
-    setResults({ profit, roi });
+    setResults({ profit, roi, roas });
   };
 
   return (
@@ -70,7 +74,7 @@ export function RoiCalculator() {
         {results && (
           <div className="space-y-4 pt-4 border-t">
             <h3 className="text-lg font-medium text-center">Resultados</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Custo Total</CardTitle>
@@ -101,6 +105,17 @@ export function RoiCalculator() {
                 <CardContent>
                   <div className={`text-2xl font-bold ${results.roi >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                     {results.roi.toFixed(2)}%
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">ROAS</CardTitle>
+                  <Repeat className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className={`text-2xl font-bold ${results.roas >= 1 ? 'text-green-500' : 'text-red-500'}`}>
+                    {results.roas.toFixed(2)}x
                   </div>
                 </CardContent>
               </Card>
